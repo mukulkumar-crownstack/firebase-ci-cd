@@ -1,14 +1,14 @@
 // The Cloud Functions for Firebase SDK to create Cloud Functions and setup triggers.
-import * as functions from 'firebase-functions';
+const functions = require("firebase-functions");
 
 // The Firebase Admin SDK to access Firebase Features from within Cloud Functions.
-import * as admin from 'firebase-admin/app';
+const { initializeApp } = require("firebase-admin/app");
 
 // import { notifyNewSignup } from './functions/notifyNewSignup.f';
-import { notifyLeadStatusUpdate } from './notifyLeadStatusUpdate.f';
+const notifyLeadStatusUpdate_f_1 = require("./notifyLeadStatusUpdate.f");
 // import { cloudAPI } from './functions/cloudAPI.f';
 
-admin.initializeApp();
+initializeApp();
 
 // Set up extra settings. Since May 29, 2020, Firebase Firebase Added support for
 // calling FirebaseFiresore.settings with { ignoreUndefinedProperties: true }.
@@ -22,7 +22,6 @@ admin.initializeApp();
 // https://firebase.google.com/docs/functions/typescript
 
 // exports.notifyNewSignup = functions.firestore.document('driver_lead/{driverCode}').onCreate(notifyNewSignup);
-
-exports.notifyLeadStatusUpdate = functions.firestore.document('driver_lead/{driverCode}').onUpdate(notifyLeadStatusUpdate);
+exports.notifyLeadStatusUpdate = functions.firestore.document('driver_lead/{driverCode}').onUpdate(notifyLeadStatusUpdate_f_1.notifyLeadStatusUpdate);
 
 // exports.cloudAPI = functions.https.onRequest(cloudAPI);
