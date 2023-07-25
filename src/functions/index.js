@@ -4,9 +4,9 @@ import * as functions from 'firebase-functions';
 // The Firebase Admin SDK to access Firebase Features from within Cloud Functions.
 import * as admin from 'firebase-admin/app';
 
-import { notifyNewSignup } from './functions/notifyNewSignup.f';
-import { notifyLeadStatusUpdate } from './functions/notifyLeadStatusUpdate.f';
-import { cloudAPI } from './functions/cloudAPI.f';
+// import { notifyNewSignup } from './functions/notifyNewSignup.f';
+import { notifyLeadStatusUpdate } from './notifyLeadStatusUpdate.f';
+// import { cloudAPI } from './functions/cloudAPI.f';
 
 admin.initializeApp();
 
@@ -25,4 +25,4 @@ admin.initializeApp();
 
 exports.notifyLeadStatusUpdate = functions.firestore.document('driver_lead/{driverCode}').onUpdate(notifyLeadStatusUpdate);
 
-exports.cloudAPI = functions.https.onRequest(cloudAPI);
+// exports.cloudAPI = functions.https.onRequest(cloudAPI);

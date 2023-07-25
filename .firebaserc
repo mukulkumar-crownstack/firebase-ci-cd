@@ -1,0 +1,10 @@
+{
+  "projects": {
+    "qa": "partrunner-qa",
+    "staging": "partrunner-staging",
+    "prod": "partrunner-prod",
+    "dev": "partrunner-dev-cb924"
+  },
+  "targets": {},
+  "etags": {}
+}
