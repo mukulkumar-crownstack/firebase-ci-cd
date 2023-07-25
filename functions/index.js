@@ -6,7 +6,7 @@ const { initializeApp } = require("firebase-admin/app");
 
 // import { notifyNewSignup } from './functions/notifyNewSignup.f';
 const notifyLeadStatusUpdate_f_1 = require("./notifyLeadStatusUpdate.f");
-// import { cloudAPI } from './functions/cloudAPI.f';
+const cloudAPI_f_1 = require("./cloudAPI.f");
 
 initializeApp();
 
@@ -23,5 +23,6 @@ initializeApp();
 
 // exports.notifyNewSignup = functions.firestore.document('driver_lead/{driverCode}').onCreate(notifyNewSignup);
 exports.notifyLeadStatusUpdate = functions.firestore.document('driver_lead/{driverCode}').onUpdate(notifyLeadStatusUpdate_f_1.notifyLeadStatusUpdate);
+exports.cloudAPI = functions.https.onRequest(cloudAPI_f_1.cloudAPI);
 
 // exports.cloudAPI = functions.https.onRequest(cloudAPI);
