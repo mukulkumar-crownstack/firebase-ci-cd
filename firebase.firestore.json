@@ -1,0 +1,44 @@
+{
+  "database": {
+    "rules": "apps/firestore/database.rules.json"
+  },
+  "firestore": {
+    "rules": "apps/firestore/firestore.rules",
+    "indexes": "apps/firestore/firestore.indexes.json"
+  },
+  "hosting": {
+    "public": "apps/firestore/public",
+    "ignore": ["firebase.json", "**/.*", "**/node_modules/**"],
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  },
+  "storage": {
+    "rules": "apps/firestore/storage.rules"
+  },
+  "functions": {
+    "predeploy": [],
+    "source": "dist/apps/firestore",
+    "runtime": "nodejs14"
+  },
+  "emulators": {
+    "functions": {
+      "port": 5001
+    },
+    "firestore": {
+      "port": 8080
+    },
+    "hosting": {
+      "port": 5000
+    },
+    "auth": {
+      "port": "9099"
+    },
+    "pubsub": {
+      "port": "8085"
+    }
+  }
+}
