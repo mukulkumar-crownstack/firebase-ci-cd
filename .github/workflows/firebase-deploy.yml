@@ -5,7 +5,7 @@ on:
     branches:
       - master
     paths:
-      - 'src/functions/**'
+      - 'functions/**'
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -17,14 +17,13 @@ jobs:
       - uses: actions/cache@v3
         with:
           path: ~/.npm
-          key: ${{ runner.os }}-node-${{ hashFiles('**/src/functions/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ hashFiles('**/functions/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Build Cloud Functions
         run: npm ci
-        working-directory: src/functions
+        working-directory: functions
       - name: Create SA key
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA }}' > $HOME/gcloud.json
       - name: Deploy Cloud Functions
         run: export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json && npx firebase-tools deploy --only functions --json         
-        working-directory: src
