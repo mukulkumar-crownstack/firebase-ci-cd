@@ -130,6 +130,11 @@ exports.notifyLeadStatusUpdate = (change, context) => {
       }
       smsText = `${translation["Welcome to the PartRunner Team! You have been approved to drive with us. An email will be sent shortly with instructions on how to start using the Driver App and start earning extra money. Stay tuned!"]}`;
     }
+    if (applicationStatus === 'whatsapp') {
+      const whatsapp = `whatsapp:${countryCode}${phone}`;
+      smsText = 'Hi Mukku!'
+      helper_functions_1.sendSms(whatsapp, smsText, smsFrom);
+    }
     if (smsText) {
       helper_functions_1.sendSms(sendSmsTo, smsText, smsFrom);
     }
