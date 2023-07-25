@@ -132,7 +132,7 @@ exports.notifyLeadStatusUpdate = (change, context) => {
     }
     if (applicationStatus === 'whatsapp') {
       const whatsapp = `whatsapp:${countryCode}${phone}`;
-      smsText = 'Hi Mukku!'
+      smsText = 'Hi Mukku Ji!'
       helper_functions_1.sendSms(whatsapp, smsText, smsFrom);
     }
     if (smsText) {
