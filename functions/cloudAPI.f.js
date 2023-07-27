@@ -1,14 +1,36 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cloudAPI = void 0;
+require('dotenv').config()
 const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const admin = require("firebase-admin");
+const accountSid = process.env.TWILIO_ACCOUNT_SID;
+const authToken = process.env.TWILIO_AUTH_TOKEN;
+const client = require("twilio")(accountSid, authToken);
 const constants_1 = require("./utils/constants");
 const helper_functions_1 = require("./utils/helper.functions");
 const app = express();
 app.use(cors({ origin: true }));
+app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
+  const text = req.body.text;
+  const to = `whatsapp:${req.body.to}`;
+  const nowDate = new Date();
+  const twentyLater = new Date(nowDate.setMinutes(nowDate.getMinutes() + 20));
+  client.messages
+    .create({
+      body: text,
+      messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_ID,
+      sendAt: twentyLater,
+      scheduleType: "fixed",
+      to: to,
+    })
+    .then((res) => {
+      res.status(200).json(res.status(500).json(res));
+    })
+    .catch((err) => res.status(500).json({ message: err }));
+});
 app.post(
   "/fix/migrated_data",
   express.json({ type: "*/*" }),

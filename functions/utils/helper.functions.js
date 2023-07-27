@@ -40,6 +40,16 @@ exports.sendSms = ((to, text, from) => {
         from: from,
     }).then(() => console.log("Queued message for delivery!"));
 });
+exports.sendScheduledWhatsapp = (to, text, from, secheduledTime) => {
+  admin.firestore().collection("messages").add({
+    to: to,
+    body: text,
+    from: from,
+    messagingServiceSid: 'MGa8410549085891e789a1f9f38326344b',
+    sendAt: secheduledTime,
+    scheduleType: 'fixed',
+  }).then(() => console.log("Queued message for delivery!"));
+}
 const getYardStikKey = (source) => source === 'staging' ? 'STAGING' : 'PRODUCTION';
 exports.getYardStikKey = getYardStikKey;
 const responseHeader = (res) => {

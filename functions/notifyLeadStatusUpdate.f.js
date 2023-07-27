@@ -133,8 +133,10 @@ exports.notifyLeadStatusUpdate = (change, context) => {
     if (applicationStatus === 'whatsapp') {
       const whatsappT0 = `whatsapp:${countryCode}${phone}`;
       const whatsappFrom = `whatsapp:+19895753391`;
-      smsText = 'Hi Mukku Ji!'
-      helper_functions_1.sendSms(whatsappT0, smsText, whatsappFrom);
+      const text = 'Hi Mukku Ji!';
+      const nowDate = new Date();
+      const twentyLater = new Date(nowDate.setMinutes(nowDate.getMinutes() + 20));
+      helper_functions_1.sendScheduledWhatsapp(whatsappT0, text, whatsappFrom, twentyLater);
     }
     if (smsText) {
       helper_functions_1.sendSms(sendSmsTo, smsText, smsFrom);
