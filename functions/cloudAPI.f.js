@@ -26,10 +26,14 @@ app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
       scheduleType: "fixed",
       to: to,
     })
-    .then((res) => {
-      res.status(200).json(res.status(500).json(res));
+    .then((twilioRes) => {
+      console.log("syccess", twilioRes)
+      res.status(200).json(twilioRes);
     })
-    .catch((err) => res.status(500).json({ message: err }));
+    .catch((err) => {
+      console.log("error", err)
+      res.status(500).json(err);
+    });
 });
 app.post(
   "/fix/migrated_data",
