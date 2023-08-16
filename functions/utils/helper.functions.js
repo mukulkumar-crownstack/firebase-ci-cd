@@ -33,23 +33,26 @@ exports.sendSlackNotification = ((text, countryCode) => {
         console.log("Error", error);
     });
 });
-exports.sendSms = ((to, text, from) => {
+exports.sendSms = ((to, text, from, cb) => {
     admin.firestore().collection("messages").add({
         to: to,
         body: text,
         from: from,
-    }).then(() => console.log("Queued message for delivery!"));
+    }).then(() => {
+        console.log("Queued message for delivery!");
+        cb({msg: "Queued message for delivery!", status: "success"});
+    }).catch(err => cb(err));
 });
-exports.sendScheduledWhatsapp = (to, text, from, secheduledTime) => {
-  admin.firestore().collection("messages").add({
-    to: to,
-    body: text,
-    from: from,
-    messagingServiceSid: 'MGa8410549085891e789a1f9f38326344b',
-    sendAt: secheduledTime,
-    scheduleType: 'fixed',
-  }).then(() => console.log("Queued message for delivery!"));
-}
+// exports.sendScheduledWhatsapp = (to, text, from, secheduledTime) => {
+//   admin.firestore().collection("messages").add({
+//     to: to,
+//     body: text,
+//     from: from,
+//     messagingServiceSid: 'MGa8410549085891e789a1f9f38326344b',
+//     sendAt: secheduledTime,
+//     scheduleType: 'fixed',
+//   }).then(() => console.log("Queued message for delivery!"));
+// }
 const getYardStikKey = (source) => source === 'staging' ? 'STAGING' : 'PRODUCTION';
 exports.getYardStikKey = getYardStikKey;
 const responseHeader = (res) => {

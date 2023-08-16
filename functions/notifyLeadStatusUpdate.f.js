@@ -130,16 +130,16 @@ exports.notifyLeadStatusUpdate = (change, context) => {
       }
       smsText = `${translation["Welcome to the PartRunner Team! You have been approved to drive with us. An email will be sent shortly with instructions on how to start using the Driver App and start earning extra money. Stay tuned!"]}`;
     }
-    if (applicationStatus === 'whatsapp') {
-      const whatsappT0 = `whatsapp:${countryCode}${phone}`;
-      const whatsappFrom = `whatsapp:+19895753391`;
-      const text = 'Hi Mukku Ji!';
-      const nowDate = new Date();
-      const twentyLater = new Date(nowDate.setMinutes(nowDate.getMinutes() + 20));
-      helper_functions_1.sendScheduledWhatsapp(whatsappT0, text, whatsappFrom, twentyLater);
-    }
     if (smsText) {
-      helper_functions_1.sendSms(sendSmsTo, smsText, smsFrom);
+      helper_functions_1.sendSms(sendSmsTo, smsText, smsFrom, (twilioRes) => {
+        if (twilioRes.status === "success") {
+          console.log("success");
+          res.status(200).json({ msg: twilioRes });
+        } else {
+          console.log("error", err);
+          res.status(500).json({ err: err });
+        }
+      });
     }
     if (slackText) {
       helper_functions_1.sendSlackNotification(

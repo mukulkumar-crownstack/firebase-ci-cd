@@ -6,35 +6,61 @@ const express = require("express");
 const cors = require("cors");
 const axios = require("axios");
 const admin = require("firebase-admin");
-const accountSid = process.env.TWILIO_ACCOUNT_SID;
-const authToken = process.env.TWILIO_AUTH_TOKEN;
-const client = require("twilio")(accountSid, authToken);
+// const accountSid = process.env.TWILIO_ACCOUNT_SID;
+// const authToken = process.env.TWILIO_AUTH_TOKEN;
+// const client = require("twilio")(accountSid, authToken);
 const constants_1 = require("./utils/constants");
 const helper_functions_1 = require("./utils/helper.functions");
 const app = express();
 app.use(cors({ origin: true }));
-app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
-  const text = req.body.text;
-  const to = `whatsapp:${req.body.to}`;
-  const nowDate = new Date();
-  const twentyLater = new Date(nowDate.setMinutes(nowDate.getMinutes() + 20));
-  client.messages
-    .create({
-      body: text,
-      messagingServiceSid: process.env.TWILIO_MESSAGING_SERVICE_ID,
-      sendAt: twentyLater,
-      scheduleType: "fixed",
-      to: to,
-    })
-    .then((twilioRes) => {
-      console.log("syccess", twilioRes)
-      res.status(200).json(twilioRes);
-    })
-    .catch((err) => {
+app.post("/notifications/sms/send", express.json({ type: "*/*" }), (req, res) => {
+  const {to, name, date, time, link, lang} = req.body;
+  const smsFrom = '+528153512795';
+  const dateObj = new Date(date);
+  const localDate = new Date(dateObj.getTime() - dateObj.getTimezoneOffset()*60*1000);
+  console.log(localDate)
+  const formatedDate = localDate.toLocaleDateString("es", {
+    weekday: "long",
+    year: "numeric",
+    month: "short",
+    day: "numeric"
+  }) 
+  const text = `Hola ${name}!! Hemos confirmado tu registro para nuestra sesión de ${formatedDate}, ${time}. Por favor recuerda dar click en el link ${link} para conectarnos.`
+  helper_functions_1.sendSms(to, text, smsFrom, (twilioRes) => {
+    if(twilioRes.status === "success") {
+      console.log("success")
+      res.status(200).json({msg: twilioRes});
+    } else {
       console.log("error", err)
-      res.status(500).json(err);
-    });
+      res.status(500).json({err: err});
+    }
+  });
 });
+// app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
+//   const text = req.body.text;
+//   // const time = new Date(req.body.);
+//   const to = `${req.body.to}`;
+//   // const from = `+19895753391`;
+//   const sendWhen = new Date(new Date().getTime() + 16 * 60000).toISOString()
+//   const messagingServiceSid = process.env.TWILIO_MESSAGING_SERVICE_ID_US;
+//   client.messages
+//     .create({
+//       body: text,
+//       from: messagingServiceSid,
+//       sendAt: sendWhen,
+//       scheduleType: "fixed",
+//       statusCallback: 'https://eo8e26lek9b38ke.m.pipedream.net',
+//       to: to
+//     })
+//     .then((twilioRes) => {
+//       console.log("syccess", messagingServiceSid, twilioRes)
+//       res.status(200).json(twilioRes);
+//     })
+//     .catch((err) => {
+//       console.log("error", err)
+//       res.status(500).json(err);
+//     });
+// });
 app.post(
   "/fix/migrated_data",
   express.json({ type: "*/*" }),
