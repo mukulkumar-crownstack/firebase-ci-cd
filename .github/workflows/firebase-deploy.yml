@@ -25,11 +25,13 @@ jobs:
       - name: Build Cloud Functions
         run: npm ci
         working-directory: functions
-      - name: Create SA key
+      - name: Create QA SA key
         if: endsWith(github.ref, '/qa')
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA}}' > $HOME/gcloud.json
+      - name: Create STAGING SA key
         if: endsWith(github.ref, '/staging')
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING}}' > $HOME/gcloud.json
+      - name: Create PROD SA key
         if: endsWith(github.ref, '/main')
         run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD}}' > $HOME/gcloud.json
       - name: Deploy Cloud Functions
