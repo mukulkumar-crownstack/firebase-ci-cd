@@ -59,4 +59,4 @@ jobs:
           SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
           SLACK_COLOR: ${{ job.status }}
           SLACK_ICON: https://avatars.slack-edge.com/2022-03-08/3220114666593_19f84a8d268616f4d4f3_48.png
-          SLACK_USERNAME: 'Firebase Deployment Bot :rocket:'
+          SLACK_USERNAME: 'Firebase Deployment Bot'
