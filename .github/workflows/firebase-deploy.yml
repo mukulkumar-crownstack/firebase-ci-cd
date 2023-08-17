@@ -8,24 +8,10 @@ on:
       - main
     paths:
       - "functions/**"
-env:
-  FIREBASE_SERVICE_ACCOUNT: undefined
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Set env vars (qa)
-        if: endsWith(github.ref, '/qa')
-        run: |
-          echo "${{ FIREBASE_SERVICE_ACCOUNT=secrets.FIREBASE_SERVICE_ACCOUNT_QA }}" >> $GITHUB_ENV
-      - name: Set env vars (staging)
-        if: endsWith(github.ref, '/staging')
-        run: |
-          echo "${{ FIREBASE_SERVICE_ACCOUNT=secrets.FIREBASE_SERVICE_ACCOUNT_STAGING }}" >> $GITHUB_ENV
-      - name: Set env vars (prod)
-        if: endsWith(github.ref, '/main')
-        run: |
-          echo "${{ FIREBASE_SERVICE_ACCOUNT=secrets.FIREBASE_SERVICE_ACCOUNT_PROD }}" >> $GITHUB_ENV
       - uses: actions/checkout@v3
       - uses: actions/setup-node@v3
         with:
@@ -40,6 +26,11 @@ jobs:
         run: npm ci
         working-directory: functions
       - name: Create SA key
-        run: echo '${{ env.FIREBASE_SERVICE_ACCOUNT }}' > $HOME/gcloud.json
+        if: endsWith(github.ref, '/qa')
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA}}' > $HOME/gcloud.json
+        if: endsWith(github.ref, '/staging')
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING}}' > $HOME/gcloud.json
+        if: endsWith(github.ref, '/main')
+        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD}}' > $HOME/gcloud.json
       - name: Deploy Cloud Functions
         run: export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json && npx firebase-tools deploy --only functions --json
