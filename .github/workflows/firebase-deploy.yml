@@ -22,17 +22,38 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/functions/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      # BUILD
       - name: Build Cloud Functions
         run: npm ci
         working-directory: functions
+      # SET ENV AND PROJECT IN FIREBASE
       - name: Create QA SA key
         if: endsWith(github.ref, '/qa')
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA}}' > $HOME/gcloud.json
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA}}' > $HOME/gcloud.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
+          npx firebase-tools use partrunner-qa
       - name: Create STAGING SA key
         if: endsWith(github.ref, '/staging')
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING}}' > $HOME/gcloud.json
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING}}' > $HOME/gcloud.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
+          npx firebase-tools use partrunner-staging
       - name: Create PROD SA key
         if: endsWith(github.ref, '/main')
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD}}' > $HOME/gcloud.json
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD}}' > $HOME/gcloud.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
+          npx firebase-tools use partrunner-prod
+      # DEPLOY
       - name: Deploy Cloud Functions
         run: export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json && npx firebase-tools deploy --only functions --json
+      # NOTIFY
+      - name: Notify Status On Slack
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          status: ${{ job.status }}
+          notify_when: 'success,failure'
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
