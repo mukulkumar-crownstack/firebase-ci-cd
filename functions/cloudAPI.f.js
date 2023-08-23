@@ -15,11 +15,11 @@ app.post(
     const { to, name, date, time, link, lang } = req.body;
     const smsFrom = "+19895753391";
     const dateObj = new Date(date);
-    const localDate = new Date(
-      dateObj.getTime() - dateObj.getTimezoneOffset() * 60 * 1000
-    );
+    // const localDate = new Date(
+    //   dateObj.getTime() - dateObj.getTimezoneOffset() * 60 * 1000
+    // );
     console.log(localDate);
-    const formatedDate = localDate.toLocaleDateString("es", {
+    const formatedDate = dateObj.toLocaleDateString("es", {
       weekday: "long",
       year: "numeric",
       month: "short",
