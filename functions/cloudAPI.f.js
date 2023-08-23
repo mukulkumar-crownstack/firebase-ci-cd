@@ -13,7 +13,7 @@ app.post(
   express.json({ type: "*/*" }),
   (req, res) => {
     const { to, name, date, time, link, lang } = req.body;
-    const smsFrom = "+528153512795";
+    const smsFrom = "+19895753391";
     const dateObj = new Date(date);
     const localDate = new Date(
       dateObj.getTime() - dateObj.getTimezoneOffset() * 60 * 1000
@@ -31,8 +31,8 @@ app.post(
         console.log("success");
         res.status(200).json({ msg: twilioRes });
       } else {
-        console.log("error", err);
-        res.status(500).json({ err: err });
+        console.log("error", twilioRes);
+        res.status(500).json({ err: twilioRes });
       }
     });
   }
