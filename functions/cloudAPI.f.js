@@ -1,41 +1,42 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.cloudAPI = void 0;
-require('dotenv').config()
+require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
-const axios = require("axios");
 const admin = require("firebase-admin");
-// const accountSid = process.env.TWILIO_ACCOUNT_SID;
-// const authToken = process.env.TWILIO_AUTH_TOKEN;
-// const client = require("twilio")(accountSid, authToken);
-const constants_1 = require("./utils/constants");
 const helper_functions_1 = require("./utils/helper.functions");
 const app = express();
 app.use(cors({ origin: true }));
-app.post("/notifications/sms/send", express.json({ type: "*/*" }), (req, res) => {
-  const {to, name, date, time, link, lang} = req.body;
-  const smsFrom = '+528153512795';
-  const dateObj = new Date(date);
-  const localDate = new Date(dateObj.getTime() - dateObj.getTimezoneOffset()*60*1000);
-  console.log(localDate)
-  const formatedDate = localDate.toLocaleDateString("es", {
-    weekday: "long",
-    year: "numeric",
-    month: "short",
-    day: "numeric"
-  }) 
-  const text = `Hola ${name}!! Hemos confirmado tu registro para nuestra sesión de ${formatedDate}, ${time}. Por favor recuerda dar click en el link ${link} para conectarnos.`
-  helper_functions_1.sendSms(to, text, smsFrom, (twilioRes) => {
-    if(twilioRes.status === "success") {
-      console.log("success")
-      res.status(200).json({msg: twilioRes});
-    } else {
-      console.log("error", err)
-      res.status(500).json({err: err});
-    }
-  });
-});
+app.post(
+  "/notifications/sms/send",
+  express.json({ type: "*/*" }),
+  (req, res) => {
+    const { to, name, date, time, link, lang } = req.body;
+    const smsFrom = "+19895753391";
+    const dateObj = new Date(date);
+    const localDate = new Date(
+      dateObj.getTime() + dateObj.getTimezoneOffset() * 60 * 1000
+    );
+    // console.log(dateObj);
+    const formatedDate = localDate.toLocaleDateString("es", {
+      weekday: "long",
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
+    const text = `Hola ${name}!! Hemos confirmado tu registro para nuestra sesión de ${formatedDate}, ${time}. Por favor recuerda dar click en el link ${link} para conectarnos.`;
+    helper_functions_1.sendSms(to, text, smsFrom, (twilioRes) => {
+      if (twilioRes.status === "success") {
+        console.log("success");
+        res.status(200).json({ msg: twilioRes });
+      } else {
+        console.log("error", twilioRes);
+        res.status(500).json({ err: twilioRes });
+      }
+    });
+  }
+);
 // app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
 //   const text = req.body.text;
 //   // const time = new Date(req.body.);
@@ -150,188 +151,188 @@ app.post(
     // }
   }
 );
-app.post("/token/:source", express.json({ type: "*/*" }), (req, res) => {
-  const options = {
-    headers: {
-      Accept: "application/json",
-      Authorization: `Account ${
-        constants_1.YARDSTIK[
-          helper_functions_1.getYardStikKey(req.params.source)
-        ].API_KEY
-      }`,
-      "Content-Type": "application/json",
-    },
-  };
-  axios
-    .post(
-      constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
-        .TOKEN_URL,
-      JSON.stringify(req.body),
-      options
-    )
-    .then((response) => {
-      res = helper_functions_1.responseHeader(res);
-      res.status(200).json(response.data);
-    })
-    .catch((error) => {
-      res.status(error.response.status).json(error.response.data);
-    });
-});
-app.post("/candidates/:source", express.json({ type: "*/*" }), (req, res) => {
-  const options = {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Account ${
-        constants_1.YARDSTIK[
-          helper_functions_1.getYardStikKey(req.params.source)
-        ].API_KEY
-      }`,
-      Accept: "application/json",
-    },
-  };
-  axios
-    .post(
-      constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
-        .CANDIDATES_URL,
-      JSON.stringify(req.body),
-      options
-    )
-    .then((response) => {
-      res = helper_functions_1.responseHeader(res);
-      res.status(200).json(response.data);
-    })
-    .catch((error) => {
-      res.status(error.response.status).json(error.response.data);
-    });
-});
-app.post("/invitations/:source", express.json({ type: "*/*" }), (req, res) => {
-  const options = {
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Account ${
-        constants_1.YARDSTIK[
-          helper_functions_1.getYardStikKey(req.params.source)
-        ].API_KEY
-      }`,
-    },
-  };
-  const body = {
-    account_package_id:
-      constants_1.YARDSTIK[
-        helper_functions_1.getYardStikKey(req.params.source)
-      ][req.body.account_package_code],
-    candidate_id: req.body.candidate_id,
-  };
-  axios
-    .post(
-      constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
-        .INVITATIONS_URL,
-      JSON.stringify(body),
-      options
-    )
-    .then((response) => {
-      res = helper_functions_1.responseHeader(res);
-      res.status(200).json(response.data);
-    })
-    .catch((error) => {
-      res.status(error.response.status).json(error.response.data);
-    });
-});
-app.get("/reports/:id/:source", express.json({ type: "*/*" }), (req, res) => {
-  const options = {
-    headers: {
-      Authorization: `Account ${
-        constants_1.YARDSTIK[
-          helper_functions_1.getYardStikKey(req.params.source)
-        ].API_KEY
-      }`,
-    },
-  };
-  axios
-    .get(
-      `${
-        constants_1.YARDSTIK[
-          helper_functions_1.getYardStikKey(req.params.source)
-        ].REPORTS_URL
-      }/${req.params.id}`,
-      options
-    )
-    .then((response) => {
-      res = helper_functions_1.responseHeader(res);
-      res.status(200).json(response.data);
-    })
-    .catch((error) => {
-      console.log(error);
-      res.status(error.response.status).json(error.response.data);
-    });
-});
-app.get(
-  "/invitations/:id/:source",
-  express.json({ type: "*/*" }),
-  (req, res) => {
-    const options = {
-      headers: {
-        Authorization: `Account ${
-          constants_1.YARDSTIK[
-            helper_functions_1.getYardStikKey(req.params.source)
-          ].API_KEY
-        }`,
-      },
-    };
-    axios
-      .get(
-        `${
-          constants_1.YARDSTIK[
-            helper_functions_1.getYardStikKey(req.params.source)
-          ].INVITATIONS_URL
-        }/${req.params.id}`,
-        options
-      )
-      .then((response) => {
-        res = helper_functions_1.responseHeader(res);
-        res.status(200).json(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-        res.status(error.response.status).json(error.response.data);
-      });
-  }
-);
-app.get(
-  "/accounts/packages/:source",
-  express.json({ type: "*/*" }),
-  (req, res) => {
-    const options = {
-      headers: {
-        Authorization: `Account ${
-          constants_1.YARDSTIK[
-            helper_functions_1.getYardStikKey(req.params.source)
-          ].API_KEY
-        }`,
-      },
-    };
-    axios
-      .get(
-        `${
-          constants_1.YARDSTIK[
-            helper_functions_1.getYardStikKey(req.params.source)
-          ].ACCOUNTS_URL
-        }/${
-          constants_1.YARDSTIK[
-            helper_functions_1.getYardStikKey(req.params.source)
-          ].ACCOUNT_ID
-        }/packages`,
-        options
-      )
-      .then((response) => {
-        res = helper_functions_1.responseHeader(res);
-        res.status(200).json(response.data);
-      })
-      .catch((error) => {
-        console.log(error);
-        res.status(error.response.status).json(error.response.data);
-      });
-  }
-);
+// app.post("/token/:source", express.json({ type: "*/*" }), (req, res) => {
+//   const options = {
+//     headers: {
+//       Accept: "application/json",
+//       Authorization: `Account ${
+//         constants_1.YARDSTIK[
+//           helper_functions_1.getYardStikKey(req.params.source)
+//         ].API_KEY
+//       }`,
+//       "Content-Type": "application/json",
+//     },
+//   };
+//   axios
+//     .post(
+//       constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
+//         .TOKEN_URL,
+//       JSON.stringify(req.body),
+//       options
+//     )
+//     .then((response) => {
+//       res = helper_functions_1.responseHeader(res);
+//       res.status(200).json(response.data);
+//     })
+//     .catch((error) => {
+//       res.status(error.response.status).json(error.response.data);
+//     });
+// });
+// app.post("/candidates/:source", express.json({ type: "*/*" }), (req, res) => {
+//   const options = {
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Account ${
+//         constants_1.YARDSTIK[
+//           helper_functions_1.getYardStikKey(req.params.source)
+//         ].API_KEY
+//       }`,
+//       Accept: "application/json",
+//     },
+//   };
+//   axios
+//     .post(
+//       constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
+//         .CANDIDATES_URL,
+//       JSON.stringify(req.body),
+//       options
+//     )
+//     .then((response) => {
+//       res = helper_functions_1.responseHeader(res);
+//       res.status(200).json(response.data);
+//     })
+//     .catch((error) => {
+//       res.status(error.response.status).json(error.response.data);
+//     });
+// });
+// app.post("/invitations/:source", express.json({ type: "*/*" }), (req, res) => {
+//   const options = {
+//     headers: {
+//       "Content-Type": "application/json",
+//       Authorization: `Account ${
+//         constants_1.YARDSTIK[
+//           helper_functions_1.getYardStikKey(req.params.source)
+//         ].API_KEY
+//       }`,
+//     },
+//   };
+//   const body = {
+//     account_package_id:
+//       constants_1.YARDSTIK[
+//         helper_functions_1.getYardStikKey(req.params.source)
+//       ][req.body.account_package_code],
+//     candidate_id: req.body.candidate_id,
+//   };
+//   axios
+//     .post(
+//       constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
+//         .INVITATIONS_URL,
+//       JSON.stringify(body),
+//       options
+//     )
+//     .then((response) => {
+//       res = helper_functions_1.responseHeader(res);
+//       res.status(200).json(response.data);
+//     })
+//     .catch((error) => {
+//       res.status(error.response.status).json(error.response.data);
+//     });
+// });
+// app.get("/reports/:id/:source", express.json({ type: "*/*" }), (req, res) => {
+//   const options = {
+//     headers: {
+//       Authorization: `Account ${
+//         constants_1.YARDSTIK[
+//           helper_functions_1.getYardStikKey(req.params.source)
+//         ].API_KEY
+//       }`,
+//     },
+//   };
+//   axios
+//     .get(
+//       `${
+//         constants_1.YARDSTIK[
+//           helper_functions_1.getYardStikKey(req.params.source)
+//         ].REPORTS_URL
+//       }/${req.params.id}`,
+//       options
+//     )
+//     .then((response) => {
+//       res = helper_functions_1.responseHeader(res);
+//       res.status(200).json(response.data);
+//     })
+//     .catch((error) => {
+//       console.log(error);
+//       res.status(error.response.status).json(error.response.data);
+//     });
+// });
+// app.get(
+//   "/invitations/:id/:source",
+//   express.json({ type: "*/*" }),
+//   (req, res) => {
+//     const options = {
+//       headers: {
+//         Authorization: `Account ${
+//           constants_1.YARDSTIK[
+//             helper_functions_1.getYardStikKey(req.params.source)
+//           ].API_KEY
+//         }`,
+//       },
+//     };
+//     axios
+//       .get(
+//         `${
+//           constants_1.YARDSTIK[
+//             helper_functions_1.getYardStikKey(req.params.source)
+//           ].INVITATIONS_URL
+//         }/${req.params.id}`,
+//         options
+//       )
+//       .then((response) => {
+//         res = helper_functions_1.responseHeader(res);
+//         res.status(200).json(response.data);
+//       })
+//       .catch((error) => {
+//         console.log(error);
+//         res.status(error.response.status).json(error.response.data);
+//       });
+//   }
+// );
+// app.get(
+//   "/accounts/packages/:source",
+//   express.json({ type: "*/*" }),
+//   (req, res) => {
+//     const options = {
+//       headers: {
+//         Authorization: `Account ${
+//           constants_1.YARDSTIK[
+//             helper_functions_1.getYardStikKey(req.params.source)
+//           ].API_KEY
+//         }`,
+//       },
+//     };
+//     axios
+//       .get(
+//         `${
+//           constants_1.YARDSTIK[
+//             helper_functions_1.getYardStikKey(req.params.source)
+//           ].ACCOUNTS_URL
+//         }/${
+//           constants_1.YARDSTIK[
+//             helper_functions_1.getYardStikKey(req.params.source)
+//           ].ACCOUNT_ID
+//         }/packages`,
+//         options
+//       )
+//       .then((response) => {
+//         res = helper_functions_1.responseHeader(res);
+//         res.status(200).json(response.data);
+//       })
+//       .catch((error) => {
+//         console.log(error);
+//         res.status(error.response.status).json(error.response.data);
+//       });
+//   }
+// );
 exports.cloudAPI = app;
 //# sourceMappingURL=cloudAPI.f.js.map

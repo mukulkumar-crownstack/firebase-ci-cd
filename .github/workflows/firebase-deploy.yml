@@ -3,9 +3,11 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - qa
+      - staging
       - main
     paths:
-      - 'functions/**'
+      - "functions/**"
 jobs:
   build_and_deploy:
     runs-on: ubuntu-latest
@@ -20,10 +22,41 @@ jobs:
           key: ${{ runner.os }}-node-${{ hashFiles('**/functions/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
+      # BUILD
       - name: Build Cloud Functions
         run: npm ci
         working-directory: functions
-      - name: Create SA key
-        run: echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA }}' > $HOME/gcloud.json
+      # SET ENV AND PROJECT IN FIREBASE
+      - name: Create QA SA key
+        if: endsWith(github.ref, '/qa')
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_QA}}' > $HOME/gcloud.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
+          npx firebase-tools use partrunner-qa
+      - name: Create STAGING SA key
+        if: endsWith(github.ref, '/staging')
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_STAGING}}' > $HOME/gcloud.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
+          npx firebase-tools use partrunner-staging
+      - name: Create PROD SA key
+        if: endsWith(github.ref, '/main')
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_PROD}}' > $HOME/gcloud.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
+          npx firebase-tools use partrunner-prod
+      # DEPLOY
       - name: Deploy Cloud Functions
-        run: export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json && npx firebase-tools deploy --only functions --json         
+        run: export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json && npx firebase-tools deploy --only functions --json
+      # NOTIFY
+      - name: Notify Status On Slack
+        if: always()
+        uses: rtCamp/action-slack-notify@v2
+        with:
+          status: ${{ job.status }}
+          notify_when: 'success,failure'
+        env:
+          SLACK_WEBHOOK: ${{ secrets.SLACK_WEBHOOK }}
+          SLACK_COLOR: ${{ job.status }}
+          SLACK_ICON: https://avatars.slack-edge.com/2022-03-08/3220114666593_19f84a8d268616f4d4f3_48.png
+          SLACK_USERNAME: 'Firebase Deployment Bot'

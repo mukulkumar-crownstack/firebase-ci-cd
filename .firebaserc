@@ -1,5 +1,9 @@
 {
   "projects": {
-    "default": "partrunner-qa"
-  }
+    "default": "partrunner-qa",
+    "staging": "partrunner-staging",
+    "prod": "partrunner-prod"
+  },
+  "targets": {},
+  "etags": {}
 }
