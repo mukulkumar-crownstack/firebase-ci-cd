@@ -18,7 +18,7 @@ app.post(
     // const localDate = new Date(
     //   dateObj.getTime() - dateObj.getTimezoneOffset() * 60 * 1000
     // );
-    console.log(localDate);
+    // console.log(dateObj);
     const formatedDate = dateObj.toLocaleDateString("es", {
       weekday: "long",
       year: "numeric",
