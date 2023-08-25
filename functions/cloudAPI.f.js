@@ -8,25 +8,33 @@ const admin = require("firebase-admin");
 const helper_functions_1 = require("./utils/helper.functions");
 const app = express();
 app.use(cors({ origin: true }));
+// app.post(
+//   "/truora",
+//   express.json({ type: "*/*" }),
+//   (req, res) => {
+//     const {}
+//     console.log("")
+//   }
+// );
 app.post(
   "/notifications/sms/send",
   express.json({ type: "*/*" }),
   (req, res) => {
-    const { to, name, date, time, link, lang } = req.body;
+    const { to, sms_body } = req.body;
     const smsFrom = "+19895753391";
-    const dateObj = new Date(date);
-    const localDate = new Date(
-      dateObj.getTime() + dateObj.getTimezoneOffset() * 60 * 1000
-    );
-    // console.log(dateObj);
-    const formatedDate = localDate.toLocaleDateString("es", {
-      weekday: "long",
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    });
-    const text = `Hola ${name}!! Hemos confirmado tu registro para nuestra sesión de ${formatedDate}, ${time}. Por favor recuerda dar click en el link ${link} para conectarnos.`;
-    helper_functions_1.sendSms(to, text, smsFrom, (twilioRes) => {
+    // const dateObj = new Date(date);
+    // const localDate = new Date(
+    //   dateObj.getTime() + dateObj.getTimezoneOffset() * 60 * 1000
+    // );
+    // // console.log(dateObj);
+    // const formatedDate = localDate.toLocaleDateString("es", {
+    //   weekday: "long",
+    //   year: "numeric",
+    //   month: "short",
+    //   day: "numeric",
+    // });
+    // const text = `Hola ${name}!! Hemos confirmado tu registro para nuestra sesión de ${formatedDate}, ${time}. Por favor recuerda dar click en el link ${link} para conectarnos.`;
+    helper_functions_1.sendSms(to, sms_body, smsFrom, (twilioRes) => {
       if (twilioRes.status === "success") {
         console.log("success");
         res.status(200).json({ msg: twilioRes });
