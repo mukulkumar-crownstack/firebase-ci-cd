@@ -45,6 +45,55 @@ app.post(
     });
   }
 );
+
+app.post("/truora/prospects/add",
+  express.json({ type: "*/*" }),
+(req, res) => {
+  const { phone, status } = req.body;
+  const data = {
+    "full_name": "test",
+    "company_name": "",
+    "phone": phone,
+    "operating_city": {
+        "Country": "MX",
+        "State": "MEX",
+        "City": "Estado de Mexico",
+        "Municipality": "",
+        "Neighborhood": "",
+        "Street Name": "",
+        "Landmark": "",
+        "Zipcode": 56530,
+        "PR Zone Code": "mx-mex-zone-0"
+    },
+    "vehicle_type_codes": [
+        "bike-backpack"
+    ],
+    "session_time": "12",
+    "session_date": "2023-08-29T18:30:00.000Z",
+    "phone_country_code": "mx",
+    "zipcode": 56530,
+    "pr_zone_code": "mx-mex-zone-0",
+    "pr_zone": "zone-0",
+    "pr_market": "mex",
+    "pr_country": "mx",
+    "status": status,
+    "session_timestamp": "2023-08-30T06:30:00Z",
+    "created_datetime": "2023-08-28T11:56:16.104Z",
+    "update_datetime": "2023-08-28T11:56:16.104Z",
+    "user_language": "aplicar",
+    "prospect_uuid": "07bc094b-17ff-5379-4f40-daf12511f941",
+    "is_truora": true
+  }
+  admin.firestore().collection("driver_lead/leads/prospects").add(data)
+    .then((firebaseRes) => {
+          console.log("success")
+          res.status(200).json({message: "added the truora data"});
+        })
+        .catch((err) => {
+          console.log("error", err)
+          res.status(500).json(err);
+        });
+})
 // app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
 //   const text = req.body.text;
 //   // const time = new Date(req.body.);
