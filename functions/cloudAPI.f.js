@@ -46,6 +46,20 @@ app.post(
   }
 );
 
+
+app.get("/truora/prospects/:id",
+  express.json({ type: "*/*" }),
+(req, res) => {
+  const phoneNumber  = req.params.phone;
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phoneNumber).limit(1).then(snapshot => {
+    if (docSnapshot.size > 0) {
+      res.status(200).json({isAvailable: false}); 
+    } else {
+      res.status(200).json({isAvailable: true}); 
+    }
+  });
+});
+
 app.post("/truora/prospects/add",
   express.json({ type: "*/*" }),
 (req, res) => {
