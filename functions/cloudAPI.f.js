@@ -47,12 +47,15 @@ app.post(
 );
 
 
-app.get("/truora/prospects/:id",
+app.get("/truora/prospects/:phone",
   express.json({ type: "*/*" }),
 (req, res) => {
   const phoneNumber  = req.params.phone;
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phoneNumber).limit(1).then(snapshot => {
-    if (docSnapshot.size > 0) {
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phoneNumber)
+  .limit(1)
+  .get()
+  .then(snapshot => {
+    if (snapshot.size > 0) {
       res.status(200).json({isAvailable: false}); 
     } else {
       res.status(200).json({isAvailable: true}); 
