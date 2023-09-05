@@ -95,11 +95,11 @@ app.post("/truora/prospects/add",
         });
 })
 
-app.put("/truora/prospects/add/:id",
+app.put("/truora/prospects/add",
   express.json({ type: "*/*" }),
   (req, res) => {
-  const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location } = req.body;
+  // const phoneNumber = req.body.id;
+  const { full_name, vehicles, email, session_time, location, phone } = req.body;
   const data = {
     "full_name": full_name,
     "company_name": "",
@@ -137,15 +137,23 @@ app.put("/truora/prospects/add/:id",
     // "prospect_uuid": "07bc094b-17ff-5379-4f40-daf12511f941",
     // "is_truora": true
   }
-  admin.firestore().doc(`driver_lead/leads/prospects/${phoneNumber}`).update(data)
-    .then((firebaseRes) => {
-          console.log("success")
-          res.status(200).json({message: "added the truora data"});
-        })
-        .catch((err) => {
-          console.log("error", err)
-          res.status(500).json(err);
-        });
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone)
+  .limit(1)
+  .get()
+  .then(snapshot => {
+    if (snapshot.size > 0) {
+      const prospectID = snapshot.docs[0].id;
+      admin.firestore().doc(`driver_lead/leads/prospects/${prospectID}`).update(data)
+        .then((firebaseRes) => {
+              console.log("success")
+              res.status(200).json({message: "updated the truora data"});
+            })
+            .catch((err) => {
+              console.log("error", err)
+              res.status(500).json(err);
+            });
+    }  
+  });
 })
 // app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
 //   const text = req.body.text;
