@@ -51,6 +51,7 @@ app.get("/truora/prospects/:phone",
   express.json({ type: "*/*" }),
 (req, res) => {
   const phoneNumber  = req.params.phone;
+  console.log(phoneNumber)
   admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phoneNumber)
   .limit(1)
   .get()
@@ -63,14 +64,46 @@ app.get("/truora/prospects/:phone",
   });
 });
 
+
 app.post("/truora/prospects/add",
   express.json({ type: "*/*" }),
 (req, res) => {
-  const { full_name, vehicles, email, session_time, location, phone } = req.body;
+  const { phone } = req.body;
+  const data = {
+    // "full_name": full_name,
+    // "company_name": "",
+    "phone": phone,
+    // "vehicles": vehicles,
+    // "email": email || '',
+    // "location_name": location,
+    // "session_time": session_time,
+    "phone_country_code": "mx",
+    "status": "prospect",
+    "created_datetime": new Date(),
+    "update_datetime": new Date(),
+    "user_language": "es",
+    "is_truora": true
+  }
+  admin.firestore().collection("driver_lead/leads/prospects").add(data)
+    .then((firebaseRes) => {
+          console.log("success")
+          res.status(200).json({message: "added the truora data"});
+        })
+        .catch((err) => {
+          console.log("error", err)
+          res.status(500).json(err);
+        });
+})
+
+app.put("/truora/prospects/add/:id",
+  express.json({ type: "*/*" }),
+  (req, res) => {
+  const phoneNumber = req.body.id;
+  const { full_name, vehicles, email, session_time, location } = req.body;
   const data = {
     "full_name": full_name,
     "company_name": "",
-    "phone": phone,
+    // "phone": phone,
     "vehicles": vehicles,
     "email": email || '',
     "location_name": location,
@@ -90,21 +123,21 @@ app.post("/truora/prospects/add",
     // ],
     "session_time": session_time,
     // "session_date": "2023-08-29T18:30:00.000Z",
-    "phone_country_code": "mx",
+    // "phone_country_code": "mx",
     // "zipcode": 56530,
     // "pr_zone_code": "mx-mex-zone-0",
     // "pr_zone": "zone-0",
     // "pr_market": "mex",
     // "pr_country": "mx",
-    "status": "prospect",
+    // "status": "prospect",
     // "session_timestamp": "2023-08-30T06:30:00Z",
-    "created_datetime": new Date(),
+    // "created_datetime": new Date(),
     "update_datetime": new Date(),
-    "user_language": "es",
+    // "user_language": "es",
     // "prospect_uuid": "07bc094b-17ff-5379-4f40-daf12511f941",
-    "is_truora": true
+    // "is_truora": true
   }
-  admin.firestore().collection("driver_lead/leads/prospects").add(data)
+  admin.firestore().doc(`driver_lead/leads/prospects/${phoneNumber}`).update(data)
     .then((firebaseRes) => {
           console.log("success")
           res.status(200).json({message: "added the truora data"});
