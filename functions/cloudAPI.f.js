@@ -154,7 +154,37 @@ app.put("/truora/prospects/add",
             });
     }  
   });
-})
+});
+
+app.put("/truora/prospects/update",
+  express.json({ type: "*/*" }),
+  (req, res) => {
+  // const phoneNumber = req.body.id;
+  const { status, phone } = req.body;
+  const data = {
+    status: status,
+    phone: phone,
+    update_datetime: new Date()
+  }
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone)
+  .limit(1)
+  .get()
+  .then(snapshot => {
+    if (snapshot.size > 0) {
+      const prospectID = snapshot.docs[0].id;
+      admin.firestore().doc(`driver_lead/leads/prospects/${prospectID}`).update(data)
+        .then((firebaseRes) => {
+              console.log("success")
+              res.status(200).json({message: "updated the truora data"});
+            })
+            .catch((err) => {
+              console.log("error", err)
+              res.status(500).json(err);
+            });
+    }
+  });
+});
+
 // app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
 //   const text = req.body.text;
 //   // const time = new Date(req.body.);
