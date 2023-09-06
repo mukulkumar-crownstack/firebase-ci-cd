@@ -79,4 +79,11 @@ const getDriverAvailablity = (availablity, countryCode) => {
     return availablity && availablity.length ? availablity.map((day, idx) => day ? constants_1.driverAvailabiltyData[idx][label] : day).filter(v => v).join('; ') : '';
 };
 exports.getDriverAvailablity = getDriverAvailablity;
+const S4 = () => {
+    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+}
+const uuidString = () => {
+    return `${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`;
+}
+exports.generateUUID = uuidString;
 //# sourceMappingURL=helper.functions.js.map
