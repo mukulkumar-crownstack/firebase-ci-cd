@@ -90,7 +90,7 @@ app.post("/truora/prospects/add",
     .get()
     .then(snapshot => {
       if (snapshot.size === 0) {
-        admin.firestore().collection("driver_lead/leads/prospects").add(data)
+        admin.firestore().doc(`driver_lead/leads/prospects/${data.prospect_uuid}`).set(data)
           .then((firebaseRes) => {
             console.log("success")
             res.status(200).json({message: "added the truora data"});
@@ -153,13 +153,13 @@ app.put("/truora/prospects/add",
       const prospectID = snapshot.docs[0].id;
       admin.firestore().doc(`driver_lead/leads/prospects/${prospectID}`).update(data)
         .then((firebaseRes) => {
-              console.log("success")
-              res.status(200).json({message: "updated the truora data"});
-            })
-            .catch((err) => {
-              console.log("error", err)
-              res.status(500).json(err);
-            });
+          console.log("success")
+          res.status(200).json({message: "updated the truora data"});
+        })
+        .catch((err) => {
+          console.log("error", err)
+          res.status(500).json(err);
+        });
     }  
   });
 });
@@ -182,13 +182,13 @@ app.put("/truora/prospects/update",
       const prospectID = snapshot.docs[0].id;
       admin.firestore().doc(`driver_lead/leads/prospects/${prospectID}`).update(data)
         .then((firebaseRes) => {
-              console.log("success")
-              res.status(200).json({message: "updated the truora data"});
-            })
-            .catch((err) => {
-              console.log("error", err)
-              res.status(500).json(err);
-            });
+          console.log("success")
+          res.status(200).json({message: "updated the truora data"});
+        })
+        .catch((err) => {
+          console.log("error", err)
+          res.status(500).json(err);
+        });
     }
   });
 });
