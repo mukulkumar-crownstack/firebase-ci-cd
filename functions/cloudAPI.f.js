@@ -129,7 +129,7 @@ app.put("/truora/prospects/add",
     // "vehicle_type_codes": [
     //     "bike-backpack"
     // ],
-    "session_time": session_time,
+    "session_time": session_time.split(' ')[0],
     // "session_date": "2023-08-29T18:30:00.000Z",
     // "phone_country_code": "mx",
     // "zipcode": 56530,
