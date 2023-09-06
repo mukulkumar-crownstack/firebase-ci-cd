@@ -84,15 +84,22 @@ app.post("/truora/prospects/add",
     "user_language": "es",
     "is_truora": true
   }
-  admin.firestore().collection("driver_lead/leads/prospects").add(data)
-    .then((firebaseRes) => {
-          console.log("success")
-          res.status(200).json({message: "added the truora data"});
-        })
-        .catch((err) => {
-          console.log("error", err)
-          res.status(500).json(err);
-        });
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone)
+    .limit(1)
+    .get()
+    .then(snapshot => {
+      if (snapshot.size === 0) {
+        admin.firestore().collection("driver_lead/leads/prospects").add(data)
+          .then((firebaseRes) => {
+            console.log("success")
+            res.status(200).json({message: "added the truora data"});
+          })
+          .catch((err) => {
+            console.log("error", err)
+            res.status(500).json(err);
+          });
+      }
+    });
 })
 
 app.put("/truora/prospects/add",
@@ -104,7 +111,7 @@ app.put("/truora/prospects/add",
     "full_name": full_name,
     "company_name": "",
     // "phone": phone,
-    "vehicles": vehicles,
+    "vehicle_type_codes": [vehicles],
     "email": email || '',
     "location_name": location,
     // "operating_city": {
