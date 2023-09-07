@@ -99,6 +99,9 @@ app.post("/truora/prospects/add",
             console.log("error", err)
             res.status(500).json(err);
           });
+      } else {
+        console.log("already present")
+        res.status(201).json({message: "prospect already present"});
       }
     });
 })
