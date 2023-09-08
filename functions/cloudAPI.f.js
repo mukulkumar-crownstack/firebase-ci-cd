@@ -83,7 +83,8 @@ app.post("/truora/prospects/add",
     "created_datetime": new Date(),
     "update_datetime": new Date(),
     "user_language": "es",
-    "is_truora": true
+    "is_truora": true,
+    "created_by": "truora" 
   }
   admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone)
     .limit(1)
