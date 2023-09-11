@@ -68,12 +68,12 @@ app.get("/truora/prospects/:phone",
 app.post("/truora/prospects/add",
   express.json({ type: "*/*" }),
 (req, res) => {
-  const { phone } = req.body;
-  console.log("Logggin prospect add............. Phone field: ",phone, req.body)
+  const { phone_number } = req.body;
+  console.log("Logggin prospect add............. Phone field: ",phone_number, req.body)
   const data = {
     // "full_name": full_name,
     // "company_name": "",
-    "phone": phone,
+    "phone": phone_number,
     // "vehicles": vehicles,
     // "email": email || '',
     // "location_name": location,
@@ -87,7 +87,7 @@ app.post("/truora/prospects/add",
     "is_truora": true,
     "created_by": "truora" 
   }
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone)
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone_number)
     .limit(1)
     .get()
     .then(snapshot => {
@@ -112,7 +112,7 @@ app.put("/truora/prospects/add",
   express.json({ type: "*/*" }),
   (req, res) => {
   // const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location, phone } = req.body;
+  const { full_name, vehicles, email, session_time, location, phone_number } = req.body;
   const data = {
     "full_name": full_name,
     "company_name": "",
@@ -150,7 +150,7 @@ app.put("/truora/prospects/add",
     // "prospect_uuid": "07bc094b-17ff-5379-4f40-daf12511f941",
     // "is_truora": true
   }
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone)
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone_number)
   .limit(1)
   .get()
   .then(snapshot => {
@@ -173,13 +173,13 @@ app.put("/truora/prospects/update",
   express.json({ type: "*/*" }),
   (req, res) => {
   // const phoneNumber = req.body.id;
-  const { status, phone } = req.body;
+  const { status, phone_number } = req.body;
   const data = {
     status: status,
-    phone: phone,
+    phone: phone_number,
     update_datetime: new Date()
   }
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone)
+  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone_number)
   .limit(1)
   .get()
   .then(snapshot => {
