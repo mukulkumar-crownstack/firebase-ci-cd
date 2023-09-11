@@ -69,6 +69,7 @@ app.post("/truora/prospects/add",
   express.json({ type: "*/*" }),
 (req, res) => {
   const { phone } = req.body;
+  console.log("Logggin prospect add............. Phone field: ",phone, req.body)
   const data = {
     // "full_name": full_name,
     // "company_name": "",
