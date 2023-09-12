@@ -121,7 +121,7 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     vehicle_type_codes: [vehicles],
     email: email || "",
     location_name: location,
-    session_time: session_time.split(":")[0],
+    session_time: !session_time ? null : session_time.split(":")[0],
     application_id: `PRD${Math.random().toString().substring(2, 9)}`,
     update_datetime: new Date(),
     application_status: 'in_progress',
@@ -176,6 +176,9 @@ app.put(
       data.driver_type_code = "flotilleros";
     } else {
       data.driver_type_code = "cliente_independiente";
+    }
+    if(status === 'rejected') {
+      data['rejection_reason'] = 6
     }
     admin
       .firestore()
