@@ -46,157 +46,157 @@ app.post(
   }
 );
 
-
-app.get("/truora/prospects/:phone",
+app.get(
+  "/truora/prospects/:phone",
   express.json({ type: "*/*" }),
-(req, res) => {
-  const phoneNumber  = req.params.phone;
-  console.log(phoneNumber)
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phoneNumber)
-  .limit(1)
-  .get()
-  .then(snapshot => {
-    if (snapshot.size > 0) {
-      res.status(200).json({isAvailable: false}); 
-    } else {
-      res.status(200).json({isAvailable: true}); 
-    }
-  });
-});
-
-
-app.post("/truora/prospects/add",
-  express.json({ type: "*/*" }),
-(req, res) => {
-  const { phone_number } = req.body;
-  console.log("Logggin prospect add............. Phone field: ",phone_number, req.body)
-  const data = {
-    // "full_name": full_name,
-    // "company_name": "",
-    "phone": phone_number,
-    // "vehicles": vehicles,
-    // "email": email || '',
-    // "location_name": location,
-    // "session_time": session_time,
-    "prospect_uuid": helper_functions_1.generateUUID(),
-    "phone_country_code": "mx",
-    "status": "prospect",
-    "created_datetime": new Date(),
-    "update_datetime": new Date(),
-    "user_language": "es",
-    "is_truora": true,
-    "created_by": "truora" 
+  (req, res) => {
+    const phoneNumber = req.params.phone;
+    console.log(phoneNumber);
+    admin
+      .firestore()
+      .collection("driver_lead/leads/prospects")
+      .where("phone", "==", phoneNumber)
+      .limit(1)
+      .get()
+      .then((snapshot) => {
+        if (snapshot.size > 0) {
+          res.status(200).json({ isAvailable: false });
+        } else {
+          res.status(200).json({ isAvailable: true });
+        }
+      });
   }
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone_number)
+);
+
+app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
+  const { phone_number, full_name, truora_flow_id } = req.body;
+  let phone = helper_functions_1.getPhoneFromPhoneNumber(phone_number);
+  const data = {
+    full_name: full_name,
+    phone: phone,
+    prospect_uuid: helper_functions_1.generateUUID(),
+    phone_country_code: "mx",
+    status: "prospect",
+    created_datetime: new Date(),
+    update_datetime: new Date(),
+    user_language: "es",
+    is_truora: true,
+    created_by: "truora",
+    truora_flow_id: truora_flow_id,
+  };
+  admin
+    .firestore()
+    .collection("driver_lead/leads/prospects")
+    .where("phone", "==", phone)
     .limit(1)
     .get()
-    .then(snapshot => {
+    .then((snapshot) => {
       if (snapshot.size === 0) {
-        admin.firestore().doc(`driver_lead/leads/prospects/${data.prospect_uuid}`).set(data)
+        admin
+          .firestore()
+          .doc(`driver_lead/leads/prospects/${data.prospect_uuid}`)
+          .set(data)
           .then((firebaseRes) => {
-            console.log("success")
-            res.status(200).json({message: "added the truora data"});
+            console.log("success");
+            res.status(200).json({ message: "added the truora data" });
           })
           .catch((err) => {
-            console.log("error", err)
+            console.log("error", err);
             res.status(500).json(err);
           });
       } else {
-        console.log("already present")
-        res.status(201).json({message: "prospect already present"});
+        console.log("already present");
+        res.status(201).json({ message: "prospect already present" });
       }
     });
-})
-
-app.put("/truora/prospects/add",
-  express.json({ type: "*/*" }),
-  (req, res) => {
-  // const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location, phone_number } = req.body;
-  const data = {
-    "full_name": full_name,
-    "company_name": "",
-    // "phone": phone,
-    "vehicle_type_codes": [vehicles],
-    "email": email || '',
-    "location_name": location,
-    // "operating_city": {
-    //     "Country": "MX",
-    //     "State": "MEX",
-    //     "City": "Estado de Mexico",
-    //     "Municipality": "",
-    //     "Neighborhood": "",
-    //     "Street Name": "",
-    //     "Landmark": "",
-    //     "Zipcode": 56530,
-    //     "PR Zone Code": "mx-mex-zone-0"
-    // },
-    // "vehicle_type_codes": [
-    //     "bike-backpack"
-    // ],
-    "session_time": session_time.split(':')[0],
-    // "session_date": "2023-08-29T18:30:00.000Z",
-    // "phone_country_code": "mx",
-    // "zipcode": 56530,
-    // "pr_zone_code": "mx-mex-zone-0",
-    // "pr_zone": "zone-0",
-    // "pr_market": "mex",
-    // "pr_country": "mx",
-    // "status": "prospect",
-    // "session_timestamp": "2023-08-30T06:30:00Z",
-    // "created_datetime": new Date(),
-    "update_datetime": new Date(),
-    // "user_language": "es",
-    // "prospect_uuid": "07bc094b-17ff-5379-4f40-daf12511f941",
-    // "is_truora": true
-  }
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone_number)
-  .limit(1)
-  .get()
-  .then(snapshot => {
-    if (snapshot.size > 0) {
-      const prospectID = snapshot.docs[0].id;
-      admin.firestore().doc(`driver_lead/leads/prospects/${prospectID}`).update(data)
-        .then((firebaseRes) => {
-          console.log("success")
-          res.status(200).json({message: "updated the truora data"});
-        })
-        .catch((err) => {
-          console.log("error", err)
-          res.status(500).json(err);
-        });
-    }  
-  });
 });
 
-app.put("/truora/prospects/update",
+app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
+  // const phoneNumber = req.body.id;
+  const { full_name, vehicles, email, session_time, location, phone_number } =
+    req.body;
+  let phone = helper_functions_1.getPhoneFromPhoneNumber(phone_number);
+  const data = {
+    full_name: full_name,
+    vehicle_type_codes: [vehicles],
+    email: email || "",
+    location_name: location,
+    session_time: session_time.split(":")[0],
+    update_datetime: new Date(),
+  };
+  admin
+    .firestore()
+    .collection("driver_lead/leads/prospects")
+    .where("phone", "==", phone)
+    .limit(1)
+    .get()
+    .then((snapshot) => {
+      if (snapshot.size > 0) {
+        const prospectID = snapshot.docs[0].id;
+        if (snapshot.docs[0].data().driver_type_code !== 'cliente_independiente') {
+          data['company_name'] = data.full_name;
+        }
+        admin
+          .firestore()
+          .doc(`driver_lead/leads/prospects/${prospectID}`)
+          .update(data)
+          .then((firebaseRes) => {
+            console.log("success");
+            res.status(200).json({ message: "updated the truora data" });
+          })
+          .catch((err) => {
+            console.log("error", err);
+            res.status(500).json(err);
+          });
+      }
+    });
+});
+
+app.put(
+  "/truora/prospects/update",
   express.json({ type: "*/*" }),
   (req, res) => {
-  // const phoneNumber = req.body.id;
-  const { status, phone_number } = req.body;
-  const data = {
-    status: status,
-    phone: phone_number,
-    update_datetime: new Date()
-  }
-  admin.firestore().collection("driver_lead/leads/prospects").where("phone", "==", phone_number)
-  .limit(1)
-  .get()
-  .then(snapshot => {
-    if (snapshot.size > 0) {
-      const prospectID = snapshot.docs[0].id;
-      admin.firestore().doc(`driver_lead/leads/prospects/${prospectID}`).update(data)
-        .then((firebaseRes) => {
-          console.log("success")
-          res.status(200).json({message: "updated the truora data"});
-        })
-        .catch((err) => {
-          console.log("error", err)
-          res.status(500).json(err);
-        });
+    // const phoneNumber = req.body.id;
+    const { status, phone_number, is_fleet } = req.body;
+    let phone = helper_functions_1.getPhoneFromPhoneNumber(phone_number);
+    const data = {
+      status: status,
+      phone: phone,
+      update_datetime: new Date(),
+    };
+    if (is_fleet) {
+      data.driver_type_code = "flotilleros";
+    } else {
+      data.driver_type_code = "cliente_independiente";
     }
-  });
-});
+    admin
+      .firestore()
+      .collection("driver_lead/leads/prospects")
+      .where("phone", "==", phone)
+      .limit(1)
+      .get()
+      .then((snapshot) => {
+        if (snapshot.size > 0) {
+          const prospectID = snapshot.docs[0].id;
+          if (is_fleet) {
+            data['company_name'] = snapshot.docs[0].data().full_name;
+          }
+          admin
+            .firestore()
+            .doc(`driver_lead/leads/prospects/${prospectID}`)
+            .update(data)
+            .then((firebaseRes) => {
+              console.log("success");
+              res.status(200).json({ message: "updated the truora data" });
+            })
+            .catch((err) => {
+              console.log("error", err);
+              res.status(500).json(err);
+            });
+        }
+      });
+  }
+);
 
 // app.post("/schedule-whatsapp", express.json({ type: "*/*" }), (req, res) => {
 //   const text = req.body.text;
