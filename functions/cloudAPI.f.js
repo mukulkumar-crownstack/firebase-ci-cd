@@ -113,7 +113,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
 
 app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   // const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location, phone } =
+  const { full_name, vehicles, email, session_time, location, phone, status } =
     req.body;
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
   const data = {
@@ -124,6 +124,9 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     session_time: session_time.split(":")[0],
     update_datetime: new Date(),
   };
+  if(status) {
+    data['status'] = status;
+  }
   admin
     .firestore()
     .collection("driver_lead/leads/prospects")
