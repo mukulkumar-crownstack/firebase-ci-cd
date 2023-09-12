@@ -86,4 +86,9 @@ const uuidString = () => {
     return `${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`;
 }
 exports.generateUUID = uuidString;
+
+exports.getPhoneFromPhoneNumber = (phoneNumber) => {
+    const idx = phoneNumber.indexOf('+1') === 0 ? 2 : 3;
+    return phoneNumber.substring(idx)
+}
 //# sourceMappingURL=helper.functions.js.map
