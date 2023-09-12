@@ -122,7 +122,11 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     email: email || "",
     location_name: location,
     session_time: session_time.split(":")[0],
+    application_id: `PRD${Math.random().toString().substring(2, 9)}`,
     update_datetime: new Date(),
+    application_status: 'in_progress',
+    lead_status: 'vehicle_info_check',
+    interview_status_code: 'scheduled'
   };
   if(status) {
     data['status'] = status;
@@ -138,6 +142,7 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
         const prospectID = snapshot.docs[0].id;
         if (snapshot.docs[0].data().driver_type_code !== 'cliente_independiente') {
           data['company_name'] = data.full_name;
+          data.lead_status = 'company_background_check';
         }
         admin
           .firestore()
