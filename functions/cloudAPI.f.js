@@ -69,11 +69,11 @@ app.get(
 );
 
 app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
-  const { phone_number, full_name, truora_flow_id } = req.body;
-  let phone = helper_functions_1.getPhoneFromPhoneNumber(phone_number);
+  const { phone, full_name, truora_flow_id } = req.body;
+  let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
   const data = {
     full_name: full_name,
-    phone: phone,
+    phone: phoneNum,
     prospect_uuid: helper_functions_1.generateUUID(),
     phone_country_code: "mx",
     status: "prospect",
@@ -87,7 +87,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   admin
     .firestore()
     .collection("driver_lead/leads/prospects")
-    .where("phone", "==", phone)
+    .where("phone", "==", phoneNum)
     .limit(1)
     .get()
     .then((snapshot) => {
@@ -113,9 +113,9 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
 
 app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   // const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location, phone_number } =
+  const { full_name, vehicles, email, session_time, location, phone } =
     req.body;
-  let phone = helper_functions_1.getPhoneFromPhoneNumber(phone_number);
+  let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
   const data = {
     full_name: full_name,
     vehicle_type_codes: [vehicles],
@@ -127,7 +127,7 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   admin
     .firestore()
     .collection("driver_lead/leads/prospects")
-    .where("phone", "==", phone)
+    .where("phone", "==", phoneNum)
     .limit(1)
     .get()
     .then((snapshot) => {
@@ -157,11 +157,11 @@ app.put(
   express.json({ type: "*/*" }),
   (req, res) => {
     // const phoneNumber = req.body.id;
-    const { status, phone_number, is_fleet } = req.body;
-    let phone = helper_functions_1.getPhoneFromPhoneNumber(phone_number);
+    const { status, phone, is_fleet } = req.body;
+    let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
     const data = {
       status: status,
-      phone: phone,
+      phone: phoneNum,
       update_datetime: new Date(),
     };
     if (is_fleet) {
@@ -172,7 +172,7 @@ app.put(
     admin
       .firestore()
       .collection("driver_lead/leads/prospects")
-      .where("phone", "==", phone)
+      .where("phone", "==", phoneNum)
       .limit(1)
       .get()
       .then((snapshot) => {
