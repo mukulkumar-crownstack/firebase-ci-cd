@@ -87,8 +87,8 @@ const uuidString = () => {
 }
 exports.generateUUID = uuidString;
 
-exports.getPhoneFromPhoneNumber = (phoneNumber) => {
+exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
     const idx = phoneNumber.indexOf('+1') === 0 ? 2 : 3;
     return phoneNumber.substring(idx)
-}
+});
 //# sourceMappingURL=helper.functions.js.map
