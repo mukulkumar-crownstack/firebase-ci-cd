@@ -172,6 +172,7 @@ app.put(
       phone: phoneNum,
       update_datetime: new Date(),
     };
+    console.log('body of status update',req.body)
     if (is_fleet) {
       data.driver_type_code = "flotilleros";
     } else {
