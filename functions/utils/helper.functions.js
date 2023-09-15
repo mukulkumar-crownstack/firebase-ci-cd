@@ -137,7 +137,7 @@ exports.getZoneDetailsFromLocationName = ((locationName) => {
         operating_city: {
             "Country": "MX",
             "State": "CMX",
-            "City": "",
+            "City": "CDMX",
             "Municipality": "",
             "Neighborhood": "",
             "Street Name": "",

@@ -143,8 +143,8 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
         }
         if(session_time) {
           const t = moment().add(1,'days').hours(+session_time.split(":")[0]).minutes(0).seconds(0).format();
-          data['session_time'] = session_time;
-          data['session_date'] = t;
+          data['session_time'] = session_time.split(":")[0];
+          data['session_date'] = new Date(t);
           data['session_timestamp'] = moment.utc(t).format();
         }
         if (prospectData.driver_type_code !== 'cliente_independiente') {
