@@ -91,4 +91,65 @@ exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
     const idx = phoneNumber.indexOf('+1') === 0 ? 2 : 3;
     return phoneNumber.substring(idx)
 });
+
+exports.getZoneDetailsFromLocationName = ((locationName) => {
+    if(locationName === 'GDL') {
+        return {
+            operating_city: {
+                "Country": "MX",
+                "State": "GDL",
+                "City": "Jalisco",
+                "Municipality": "",
+                "Neighborhood": "",
+                "Street Name": "",
+                "Landmark": "",
+                "Zipcode": 44100,
+                "PR Zone Code": "mx-mex-zone-0"
+            },
+            pr_country: "mx",
+            pr_market: "mex",
+            pr_zone: "zone-0",
+            pr_zone_code: "mx-mex-zone-0",
+            zipcode: 44100
+        };
+    } 
+    if(locationName === 'MTY') {
+        return {
+            operating_city: {
+                "Country": "MX",
+                "State": "MTY",
+                "City": "Nuevo Leon",
+                "Municipality": "",
+                "Neighborhood": "",
+                "Street Name": "",
+                "Landmark": "",
+                "Zipcode": 64600,
+                "PR Zone Code": "mx-mex-zone-0"
+            },
+            pr_country: "mx",
+            pr_market: "mex",
+            pr_zone: "zone-0",
+            pr_zone_code: "mx-mex-zone-0",
+            zipcode: 64600
+        };
+    } 
+    return {
+        operating_city: {
+            "Country": "MX",
+            "State": "CMX",
+            "City": "",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 1000,
+            "PR Zone Code": "mx-cmx-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "cmx",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-cmx-zone-0",
+        zipcode: 1000
+    };
+})
 //# sourceMappingURL=helper.functions.js.map
