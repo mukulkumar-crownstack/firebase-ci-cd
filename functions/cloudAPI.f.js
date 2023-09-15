@@ -129,7 +129,7 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
         const zoneDetails = helper_functions_1.getZoneDetailsFromLocationName(location)
         const data = {
           full_name: full_name || prospectData.full_name,
-          vehicle_type_codes: vehicles && [vehicles] || null,
+          vehicle_type_codes: vehicles && [vehicles] || prospectData.vehicle_type_codes || null,
           email: email || "",
           session_time: null,
           session_timestamp: null,
