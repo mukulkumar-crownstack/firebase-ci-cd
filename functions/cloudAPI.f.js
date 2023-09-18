@@ -17,6 +17,14 @@ app.use(cors({ origin: true }));
 //     console.log("")
 //   }
 // );
+
+app.get('/truora/token',
+express.json({ type: "*/*" }),
+(req, res) => {
+  console.log(req);
+  res.status(200).json({message: "successful"});
+});
+
 app.post(
   "/notifications/sms/send",
   express.json({ type: "*/*" }),
