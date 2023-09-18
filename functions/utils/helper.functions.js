@@ -79,4 +79,77 @@ const getDriverAvailablity = (availablity, countryCode) => {
     return availablity && availablity.length ? availablity.map((day, idx) => day ? constants_1.driverAvailabiltyData[idx][label] : day).filter(v => v).join('; ') : '';
 };
 exports.getDriverAvailablity = getDriverAvailablity;
+const S4 = () => {
+    return (((1 + Math.random()) * 0x10000) | 0).toString(16).substring(1);
+}
+const uuidString = () => {
+    return `${S4()}${S4()}-${S4()}-${S4()}-${S4()}-${S4()}${S4()}${S4()}`;
+}
+exports.generateUUID = uuidString;
+
+exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
+    const idx = phoneNumber.indexOf('+1') === 0 ? 2 : 3;
+    return phoneNumber.substring(idx)
+});
+
+exports.getZoneDetailsFromLocationName = ((locationName) => {
+    if(locationName === 'GDL') {
+        return {
+            operating_city: {
+                "Country": "MX",
+                "State": "GDL",
+                "City": "Jalisco",
+                "Municipality": "",
+                "Neighborhood": "",
+                "Street Name": "",
+                "Landmark": "",
+                "Zipcode": 44100,
+                "PR Zone Code": "mx-mex-zone-0"
+            },
+            pr_country: "mx",
+            pr_market: "mex",
+            pr_zone: "zone-0",
+            pr_zone_code: "mx-mex-zone-0",
+            zipcode: 44100
+        };
+    } 
+    if(locationName === 'MTY') {
+        return {
+            operating_city: {
+                "Country": "MX",
+                "State": "MTY",
+                "City": "Nuevo Leon",
+                "Municipality": "",
+                "Neighborhood": "",
+                "Street Name": "",
+                "Landmark": "",
+                "Zipcode": 64600,
+                "PR Zone Code": "mx-mex-zone-0"
+            },
+            pr_country: "mx",
+            pr_market: "mex",
+            pr_zone: "zone-0",
+            pr_zone_code: "mx-mex-zone-0",
+            zipcode: 64600
+        };
+    } 
+    return {
+        operating_city: {
+            "Country": "MX",
+            "State": "CMX",
+            "City": "CDMX",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 1000,
+            "PR Zone Code": "mx-cmx-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "cmx",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-cmx-zone-0",
+        zipcode: 1000
+    };
+})
 //# sourceMappingURL=helper.functions.js.map
