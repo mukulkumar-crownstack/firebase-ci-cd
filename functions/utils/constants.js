@@ -403,6 +403,24 @@ exports.zoneData = {
         pr_zone: "zone-0",
         pr_zone_code: "mx-mex-zone-0",
         zipcode: 37000
+    },
+    "Hidalgo": {
+        operating_city: {
+            "Country": "MX",
+            "State": "HG",
+            "City": "Pachucha",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 78557,
+            "PR Zone Code": "mx-pch-zone-1"
+        },
+        pr_country: "mx",
+        pr_market: "pch",
+        pr_zone: "zone-1",
+        pr_zone_code: "mx-pch-zone-1",
+        zipcode: 78557
     }
 }
 //# sourceMappingURL=constants.js.map
