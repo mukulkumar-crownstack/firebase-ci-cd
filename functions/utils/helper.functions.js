@@ -93,47 +93,8 @@ exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
 });
 
 exports.getZoneDetailsFromLocationName = ((locationName) => {
-    if(locationName === 'GDL') {
-        return {
-            operating_city: {
-                "Country": "MX",
-                "State": "GDL",
-                "City": "Jalisco",
-                "Municipality": "",
-                "Neighborhood": "",
-                "Street Name": "",
-                "Landmark": "",
-                "Zipcode": 44100,
-                "PR Zone Code": "mx-mex-zone-0"
-            },
-            pr_country: "mx",
-            pr_market: "mex",
-            pr_zone: "zone-0",
-            pr_zone_code: "mx-mex-zone-0",
-            zipcode: 44100
-        };
-    } 
-    if(locationName === 'MTY') {
-        return {
-            operating_city: {
-                "Country": "MX",
-                "State": "MTY",
-                "City": "Nuevo Leon",
-                "Municipality": "",
-                "Neighborhood": "",
-                "Street Name": "",
-                "Landmark": "",
-                "Zipcode": 64600,
-                "PR Zone Code": "mx-mex-zone-0"
-            },
-            pr_country: "mx",
-            pr_market: "mex",
-            pr_zone: "zone-0",
-            pr_zone_code: "mx-mex-zone-0",
-            zipcode: 64600
-        };
-    } 
-    return {
+    const zoneDetails = constants_1.zoneData(locationName);
+    return zoneDetails ? zoneDetails: {
         operating_city: {
             "Country": "MX",
             "State": "CMX",

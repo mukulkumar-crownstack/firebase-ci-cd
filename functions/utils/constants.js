@@ -258,4 +258,151 @@ exports.driverAvailabiltyData = [
         "label_en": "Sunday, Overnight runs"
     }
 ];
+
+exports.zoneData = {
+    "Ciudad de México": {
+        operating_city: {
+            "Country": "MX",
+            "State": "CMX",
+            "City": "CDMX",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 1000,
+            "PR Zone Code": "mx-cmx-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "cmx",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-cmx-zone-0",
+        zipcode: 1000
+    },
+    "Estado de México" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "MEX",
+            "City": "Toluca",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 53598,
+            "PR Zone Code": "mx-mex-zone-1"
+        },
+        pr_country: "mx",
+        pr_market: "mex",
+        pr_zone: "zone-1",
+        pr_zone_code: "mx-mex-zone-1",
+        zipcode: 53598
+    }, 
+    "Puebla" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "PBC",
+            "City": "Puebla",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 72000,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "pue",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 72000
+    },
+    "Jalisco" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "GDL",
+            "City": "Jalisco",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 44100,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "gdl",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 44100
+    },
+    "Nuevo León" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "MTY",
+            "City": "Nuevo Leon",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 64600,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "mty",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 64600
+    },
+    "Toluca" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "MEX",
+            "City": "Toluca",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 50000,
+            "PR Zone Code": "mx-mex-zone-1"
+        },
+        pr_country: "mx",
+        pr_market: "tol",
+        pr_zone: "zone-1",
+        pr_zone_code: "mx-mex-zone-1",
+        zipcode: 50000
+    },
+    "Querétaro": {
+        operating_city: {
+            "Country": "MX",
+            "State": "QRO",
+            "City": "Queretaro",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 76000,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "qro",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 76000
+    },
+    "Guanajuato": {
+        operating_city: {
+            "Country": "MX",
+            "State": "Guanajuato",
+            "City": "León",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 37000,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "gto",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 37000
+    }
+}
 //# sourceMappingURL=constants.js.map
