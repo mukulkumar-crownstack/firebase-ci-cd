@@ -76,8 +76,10 @@ app.get(
 );
 
 app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
-  const { phone, full_name, truora_flow_id } = req.body;
+  const { phone, full_name, truora_flow_id, truora_flow_name } = req.body;
+  console.log("Truora phone :",phone)
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
+  console.log("Truora phone :",phoneNum)
   const data = {
     full_name: full_name,
     phone: phoneNum,
@@ -90,6 +92,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     is_truora: true,
     created_by: "truora",
     truora_flow_id: truora_flow_id,
+    truora_flow_name: truora_flow_name
   };
   admin
     .firestore()
@@ -120,7 +123,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
 
 app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   // const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location, phone, status } =
+  const { full_name, vehicles, email, session_time, location, phone, status, vehicle_year, meeting_type } =
     req.body;
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
   admin
@@ -148,6 +151,8 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           lead_status: "vehicle_info_check",
           interview_status_code: "scheduled",
           status: status || prospectData.status,
+          meeting_type: meeting_type || null,
+          vehicle_year: vehicle_year || null,
           ...zoneDetails,
         };
         if (session_time) {
