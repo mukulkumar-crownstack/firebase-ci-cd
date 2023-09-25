@@ -97,7 +97,7 @@ exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
 });
 
 exports.getZoneDetailsFromLocationName = ((locationName) => {
-    const zoneDetails = constants_1.zoneData(locationName);
+    const zoneDetails = constants_1.zoneData[locationName];
     return zoneDetails ? zoneDetails: {
         operating_city: {
             "Country": "MX",
