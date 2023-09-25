@@ -18,11 +18,9 @@ app.use(cors({ origin: true }));
 //   }
 // );
 
-app.get('/truora/token',
-express.json({ type: "*/*" }),
-(req, res) => {
+app.get("/truora/token", express.json({ type: "*/*" }), (req, res) => {
   console.log(req);
-  res.status(200).json({message: "successful"});
+  res.status(200).json({ message: "successful" });
 });
 
 app.post(
@@ -78,8 +76,10 @@ app.get(
 );
 
 app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
-  const { phone, full_name, truora_flow_id } = req.body;
+  const { phone, full_name, truora_flow_id, truora_flow_name } = req.body;
+  console.log("Truora phone :",phone)
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
+  console.log("Truora phone :",phoneNum)
   const data = {
     full_name: full_name,
     phone: phoneNum,
@@ -92,6 +92,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     is_truora: true,
     created_by: "truora",
     truora_flow_id: truora_flow_id,
+    truora_flow_name: truora_flow_name
   };
   admin
     .firestore()
@@ -122,9 +123,10 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
 
 app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   // const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location, phone, status } = req.body;
+  const { full_name, vehicles, email, session_time, location, phone, status, vehicle_year, meeting_type } =
+    req.body;
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
-    admin
+  admin
     .firestore()
     .collection("driver_lead/leads/prospects")
     .where("phone", "==", phoneNum)
@@ -134,30 +136,39 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
       if (snapshot.size > 0) {
         const prospectID = snapshot.docs[0].id;
         const prospectData = snapshot.docs[0].data();
-        const zoneDetails = helper_functions_1.getZoneDetailsFromLocationName(location)
+        const zoneDetails =
+          helper_functions_1.getZoneDetailsFromLocationName(location);
         const data = {
           full_name: full_name || prospectData.full_name,
-          vehicle_type_codes: vehicles && [vehicles] || prospectData.vehicle_type_codes || null,
+          vehicle_type_codes:
+            (vehicles && [vehicles]) || prospectData.vehicle_type_codes || null,
           email: email || "",
           session_time: null,
           session_timestamp: null,
           application_id: `PRD${Math.random().toString().substring(2, 9)}`,
           update_datetime: new Date(),
-          application_status: 'in_progress',
-          lead_status: 'vehicle_info_check',
-          interview_status_code: 'scheduled',
+          application_status: "in_progress",
+          lead_status: "vehicle_info_check",
+          interview_status_code: "scheduled",
           status: status || prospectData.status,
-          ...zoneDetails
+          meeting_type: meeting_type || null,
+          vehicle_year: vehicle_year || null,
+          ...zoneDetails,
+        };
+        if (session_time) {
+          const t = moment()
+            .add(1, "days")
+            .hours(+session_time.split(":")[0])
+            .minutes(0)
+            .seconds(0)
+            .format();
+          data["session_time"] = session_time.split(":")[0];
+          data["session_date"] = new Date(t);
+          data["session_timestamp"] = moment.utc(t).format();
         }
-        if(session_time) {
-          const t = moment().add(1,'days').hours(+session_time.split(":")[0]).minutes(0).seconds(0).format();
-          data['session_time'] = session_time.split(":")[0];
-          data['session_date'] = new Date(t);
-          data['session_timestamp'] = moment.utc(t).format();
-        }
-        if (prospectData.driver_type_code !== 'cliente_independiente') {
-          data['company_name'] = data.full_name;
-          data.lead_status = 'company_background_check';
+        if (prospectData.driver_type_code !== "cliente_independiente") {
+          data["company_name"] = data.full_name;
+          data.lead_status = "company_background_check";
         }
         admin
           .firestore()
@@ -187,14 +198,14 @@ app.put(
       phone: phoneNum,
       update_datetime: new Date(),
     };
-    console.log('body of status update',req.body)
+    console.log("body of status update", req.body);
     if (is_fleet == "true") {
       data.driver_type_code = "flotilleros";
     } else {
       data.driver_type_code = "cliente_independiente";
     }
-    if(status === 'rejected') {
-      data['rejection_reason'] = 6
+    if (status === "rejected") {
+      data["rejection_reason"] = 6;
     }
     admin
       .firestore()
@@ -206,7 +217,7 @@ app.put(
         if (snapshot.size > 0) {
           const prospectID = snapshot.docs[0].id;
           if (is_fleet == "true") {
-            data['company_name'] = snapshot.docs[0].data().full_name;
+            data["company_name"] = snapshot.docs[0].data().full_name;
           }
           admin
             .firestore()
@@ -220,6 +231,115 @@ app.put(
               console.log("error", err);
               res.status(500).json(err);
             });
+        }
+      });
+  }
+);
+
+app.post(
+  "/truora/prospects/qualify",
+  express.json({ type: "*/*" }),
+  (req, res) => {
+    // const phoneNumber = req.body.id;
+    const { status, phone } = req.body;
+    let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
+    const data = {
+      status: status,
+      phone: phoneNum,
+      update_datetime: new Date(),
+    };
+    admin
+      .firestore()
+      .collection("driver_lead/leads/prospects")
+      .where("phone", "==", phoneNum)
+      .limit(1)
+      .get()
+      .then((result) => {
+        return result;
+      })
+      .then((snapshot) => {
+        if (snapshot.size > 0) {
+          const prospectID = snapshot.docs[0].id;
+          const prospectData = snapshot.docs[0].data();
+          console.log(`prospect data ${prospectID}: ${prospectData}`);
+          if (prospectData) {
+            admin
+              .firestore()
+              .collection(`driver_lead`)
+              .where("phone", "==", phoneNum)
+              .where("phone_country_code", "==", prospectData.phone_country_code)
+              .limit(1)
+              .get()
+              .then((leadSnapshot) => {
+                if (leadSnapshot.size === 0) {
+                  const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNum}`;
+                  console.log(`leadSnapshot data ${leadID}`);
+                  admin
+                    .firestore()
+                    .doc(`driver_lead/${leadID}`)
+                    .set(prospectData)
+                    .then((firebaseRes) => {
+                      console.log(`successfully created ${leadID}`);
+                      const crrDate = new Date();
+                      const logVal = {
+                        previousStatus: "",
+                        currentStatus: 'Shown Interest',
+                        updatedDateTime: new Date(),
+                        updatedBy: "Truora",
+                        action: "admin",
+                        notes: "",
+                      };
+                      admin
+                        .firestore()
+                        .collection(`driver_lead/${leadID}/change_logs`)
+                        .doc(crrDate.toISOString())
+                        .set(logVal)
+                        .then((firebaseRes) => {
+                          console.log('Created first log');
+                          const crrDate = new Date();
+                          const newLog = {
+                            ...logVal,
+                            previousStatus: 'Shown Interest',
+                            currentStatus: prospectData.lead_status.split('_').map(t => t.charAt(0).toUpperCase()+t.substring(1).toLowerCase()).join(' ')
+                          }
+                          admin
+                            .firestore()
+                            .collection(`driver_lead/${leadID}/change_logs`)
+                            .doc(crrDate.toISOString())
+                            .set(newLog)
+                            .then((firebaseRes) => {
+                              console.log('Created second log');
+                            });
+                        });
+                      admin
+                        .firestore()
+                        .doc(`driver_lead/leads/prospects/${prospectID}`)
+                        .update(data)
+                        .then((firebaseRes) => {
+                          console.log(`successfully updated ${prospectID}`);
+                          res.status(200).json({
+                            message: `added driver lead ${leadID} and updated the truora profile ${prospectID}`,
+                          });
+                        })
+                        .catch((err) => {
+                          console.log("error", err);
+                          res.status(500).json(err);
+                        });
+                    })
+                    .catch((err) => {
+                      console.log("error", err);
+                      res.status(500).json(err);
+                    });
+                } else {
+                  console.log(
+                    `profile already present in qualified lead as ${prospectData.phone_country_code}${phoneNum}`
+                  );
+                  res.status(400).json({
+                    message: `lead already present with phone: ${prospectData.phone_country_code}${phoneNum}`,
+                  });
+                }
+              });
+          }
         }
       });
   }
