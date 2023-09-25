@@ -89,7 +89,11 @@ exports.generateUUID = uuidString;
 
 exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
     const idx = phoneNumber.indexOf('+1') === 0 ? 2 : 3;
-    return phoneNumber.substring(idx)
+    const phone = phoneNumber.substring(idx);
+    if(phone.length === 11) {
+       return phoneNumber.substring(idx+1);
+    }
+    return phone;
 });
 
 exports.getZoneDetailsFromLocationName = ((locationName) => {
