@@ -191,7 +191,7 @@ app.put(
   express.json({ type: "*/*" }),
   (req, res) => {
     // const phoneNumber = req.body.id;
-    const { status, phone, is_fleet } = req.body;
+    const { status, phone, is_fleet, rejection_reason } = req.body;
     let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
     const data = {
       status: status,
@@ -205,7 +205,11 @@ app.put(
       data.driver_type_code = "cliente_independiente";
     }
     if (status === "rejected") {
-      data["rejection_reason"] = 6;
+      if(rejection_reason) {
+        data["rejection_reason"] = rejection_reason;
+      } else {
+        data["rejection_reason"] = 7;
+      }
     }
     admin
       .firestore()
