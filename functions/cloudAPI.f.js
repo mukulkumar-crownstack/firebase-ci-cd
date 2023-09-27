@@ -206,7 +206,7 @@ app.put(
     }
     if (status === "rejected") {
       if(rejection_reason) {
-        data["rejection_reason"] = rejection_reason;
+        data["rejection_reason"] = +rejection_reason;
       } else {
         data["rejection_reason"] = 7;
       }
