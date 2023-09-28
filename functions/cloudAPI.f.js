@@ -77,9 +77,9 @@ app.get(
 
 app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   const { phone, full_name, truora_flow_id, truora_flow_name } = req.body;
-  console.log("Truora phone :",phone)
+  console.log("Truora phone :", phone);
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
-  console.log("Truora phone :",phoneNum)
+  console.log("Truora phone :", phoneNum);
   const data = {
     full_name: full_name,
     phone: phoneNum,
@@ -92,7 +92,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     is_truora: true,
     created_by: "truora",
     truora_flow_id: truora_flow_id,
-    truora_flow_name: truora_flow_name
+    truora_flow_name: truora_flow_name,
   };
   admin
     .firestore()
@@ -123,8 +123,17 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
 
 app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
   // const phoneNumber = req.body.id;
-  const { full_name, vehicles, email, session_time, location, phone, status, vehicle_year, meeting_type } =
-    req.body;
+  const {
+    full_name,
+    vehicles,
+    email,
+    session_time,
+    location,
+    phone,
+    status,
+    vehicle_year,
+    meeting_type,
+  } = req.body;
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
   admin
     .firestore()
@@ -205,7 +214,7 @@ app.put(
       data.driver_type_code = "cliente_independiente";
     }
     if (status === "rejected") {
-      if(rejection_reason) {
+      if (rejection_reason) {
         data["rejection_reason"] = +rejection_reason;
       } else {
         data["rejection_reason"] = 7;
@@ -271,7 +280,11 @@ app.post(
               .firestore()
               .collection(`driver_lead`)
               .where("phone", "==", phoneNum)
-              .where("phone_country_code", "==", prospectData.phone_country_code)
+              .where(
+                "phone_country_code",
+                "==",
+                prospectData.phone_country_code
+              )
               .limit(1)
               .get()
               .then((leadSnapshot) => {
@@ -287,7 +300,7 @@ app.post(
                       const crrDate = new Date();
                       const logVal = {
                         previousStatus: "",
-                        currentStatus: 'Shown Interest',
+                        currentStatus: "Shown Interest",
                         updatedDateTime: new Date(),
                         updatedBy: "Truora",
                         action: "admin",
@@ -299,20 +312,27 @@ app.post(
                         .doc(crrDate.toISOString())
                         .set(logVal)
                         .then((firebaseRes) => {
-                          console.log('Created first log');
+                          console.log("Created first log");
                           const crrDate = new Date();
                           const newLog = {
                             ...logVal,
-                            previousStatus: 'Shown Interest',
-                            currentStatus: prospectData.lead_status.split('_').map(t => t.charAt(0).toUpperCase()+t.substring(1).toLowerCase()).join(' ')
-                          }
+                            previousStatus: "Shown Interest",
+                            currentStatus: prospectData.lead_status
+                              .split("_")
+                              .map(
+                                (t) =>
+                                  t.charAt(0).toUpperCase() +
+                                  t.substring(1).toLowerCase()
+                              )
+                              .join(" "),
+                          };
                           admin
                             .firestore()
                             .collection(`driver_lead/${leadID}/change_logs`)
                             .doc(crrDate.toISOString())
                             .set(newLog)
                             .then((firebaseRes) => {
-                              console.log('Created second log');
+                              console.log("Created second log");
                             });
                         });
                       admin
@@ -338,9 +358,20 @@ app.post(
                   console.log(
                     `profile already present in qualified lead as ${prospectData.phone_country_code}${phoneNum}`
                   );
-                  res.status(400).json({
-                    message: `lead already present with phone: ${prospectData.phone_country_code}${phoneNum}`,
-                  });
+                  admin
+                    .firestore()
+                    .doc(`driver_lead/leads/prospects/${prospectID}`)
+                    .update(data)
+                    .then((firebaseRes) => {
+                      console.log(`successfully updated ${prospectID}`);
+                      res.status(400).json({
+                        message: `lead already present with phone: ${prospectData.phone_country_code}${phoneNum}`,
+                      });
+                    })
+                    .catch((err) => {
+                      console.log("error", err);
+                      res.status(500).json(err);
+                    });
                 }
               });
           }
