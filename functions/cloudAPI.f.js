@@ -220,6 +220,9 @@ app.put(
         data["rejection_reason"] = 7;
       }
     }
+    if (status === "pre_lead") {
+      data["has_vehicle"] = true;
+    }
     admin
       .firestore()
       .collection("driver_lead/leads/prospects")
