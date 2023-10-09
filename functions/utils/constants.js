@@ -47,7 +47,7 @@ exports.es = {
     "Vehicle Types": "Tipo de Vehículo",
     "Interview date & time": "Fecha y hora de entrevista",
     "Driver Details": "Detalles del Conductor",
-    "Link": "Link",
+    "Link": "Enlace",
     "Independent Driver": "Conductor independiente",
     "Owner Operator": "Operador propietario",
     "Fleet Operator": "Operador de flota",
