@@ -55,7 +55,18 @@ exports.notifyLeadStatusUpdate = (change, context) => {
       }/login`;
     }
     if (applicationStatus === enums_1.ApplicationStatus.UNDER_REVIEW) {
-      smsText = `${translation["Your application to drive with PartRunner has been confirmed. We will contact you again to train you and answer any questions soon."]}`;
+      // smsText = `${translation["Your application to drive with PartRunner is under review. We will contact you again to train you and answer any questions soon."]}`;
+      slackText = `
+          ${translation["A new driver has been put under review"]}
+
+          ${translation.Name}: ${name}
+
+          ${translation["Phone Number"]}: ${sendSmsTo}
+
+          ${translation["Driver Type"]}: ${driverType}
+
+          ${translation["Link"]}: ${helper_functions_1.getPartrunnerBaseURL('admin')}/${translation.language}/driver-leads/detail/${newValue.driver_type_code}_${newValue.phone_country_code}_${newValue.phone}
+      `;
     }
     if (applicationStatus === enums_1.ApplicationStatus.REJECTED) {
       const email =
