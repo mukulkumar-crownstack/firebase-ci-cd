@@ -134,6 +134,8 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     status,
     vehicle_year,
     meeting_type,
+    referred_by_name,
+    referred_by_phone
   } = req.body;
   let phoneNum = helper_functions_1.getPhoneFromPhoneNumber(phone);
   admin
@@ -163,6 +165,8 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           status: status || prospectData.status,
           meeting_type: meeting_type || null,
           vehicle_year: vehicle_year || null,
+          referred_by_name: referred_by_name || null,
+          referred_by_phone: referred_by_phone || null,
           ...zoneDetails,
         };
         if (session_time) {
