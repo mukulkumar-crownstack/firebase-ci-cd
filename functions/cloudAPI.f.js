@@ -117,7 +117,53 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           });
       } else {
         console.log("already present");
-        res.status(201).json({ message: "prospect already present" });
+        const prospectID = snapshot.docs[0].id;
+        const prospectData = snapshot.docs[0].data();
+        if(prospectData.status === 'rejected') {
+          res.status(201).json({ message: "prospect already present" });
+          const data = {
+            status: 'prospect',
+            created_datetime: new Date(),
+            update_datetime: new Date(),
+            truora_flow_name: truora_flow_name,
+            truora_flow_id: truora_flow_id,
+            created_by: "truora",
+          }
+          admin
+          .firestore()
+          .doc(`driver_lead/leads/prospects/${prospectID}`)
+          .update(data)
+          .then((firebaseRes) => {
+            console.log("updated prospect in firestore with rejected status");
+            res.status(200).json({ message: "prospect already present with update from rejected to prospect status in firestore" });
+          })
+          .catch((err) => {
+            console.log("error", err);
+            res.status(500).json(err);
+          });
+        } else if(prospectData.status === 'qualified') {
+          res.status(201).json({ message: "prospect already present with qualified status" });
+        } else {
+          const data = {
+            created_datetime: new Date(),
+            update_datetime: new Date(),
+            truora_flow_name: truora_flow_name,
+            truora_flow_id: truora_flow_id,
+            created_by: "truora",
+          }
+          admin
+          .firestore()
+          .doc(`driver_lead/leads/prospects/${prospectID}`)
+          .update(data)
+          .then((firebaseRes) => {
+            console.log("updated prospect in firestore");
+            res.status(200).json({ message: "prospect already present with update in firestore" });
+          })
+          .catch((err) => {
+            console.log("error", err);
+            res.status(500).json(err);
+          });
+        }
       }
     });
 });
