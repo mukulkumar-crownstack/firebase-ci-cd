@@ -109,7 +109,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           .set(data)
           .then((firebaseRes) => {
             console.log("success");
-            res.status(200).json({ message: "added the truora data" });
+            res.status(200).json({ message: "added the truora data", status: prospectData.status });
           })
           .catch((err) => {
             console.log("error", err);
@@ -120,7 +120,6 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
         const prospectID = snapshot.docs[0].id;
         const prospectData = snapshot.docs[0].data();
         if(prospectData.status === 'rejected') {
-          res.status(201).json({ message: "prospect already present" });
           const data = {
             status: 'prospect',
             created_datetime: new Date(),
@@ -135,14 +134,14 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           .update(data)
           .then((firebaseRes) => {
             console.log("updated prospect in firestore with rejected status");
-            res.status(200).json({ message: "prospect already present with update from rejected to prospect status in firestore" });
+            res.status(200).json({ message: "prospect already present with update from rejected to prospect status in firestore", status: prospectData.status});
           })
           .catch((err) => {
             console.log("error", err);
             res.status(500).json(err);
           });
         } else if(prospectData.status === 'qualified') {
-          res.status(201).json({ message: "prospect already present with qualified status" });
+          res.status(201).json({ message: "prospect already present with qualified status", status: prospectData.status });
         } else {
           const data = {
             created_datetime: new Date(),
@@ -157,7 +156,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           .update(data)
           .then((firebaseRes) => {
             console.log("updated prospect in firestore");
-            res.status(200).json({ message: "prospect already present with update in firestore" });
+            res.status(200).json({ message: "prospect already present with update in firestore", status: prospectData.status });
           })
           .catch((err) => {
             console.log("error", err);
