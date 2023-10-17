@@ -94,6 +94,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     created_by: "truora",
     truora_flow_id: truora_flow_id,
     truora_flow_name: truora_flow_name,
+    last_status_update: new Date()
   };
   admin
     .firestore()
@@ -127,6 +128,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
             truora_flow_name: truora_flow_name,
             truora_flow_id: truora_flow_id,
             created_by: "truora",
+            last_status_update: new Date()
           }
           admin
           .firestore()
@@ -149,6 +151,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
             truora_flow_name: truora_flow_name,
             truora_flow_id: truora_flow_id,
             created_by: "truora",
+            last_status_update: new Date()
           }
           admin
           .firestore()
@@ -229,6 +232,9 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           data["company_name"] = data.full_name;
           data.lead_status = "company_background_check";
         }
+        if(status !== prospectData.status) {
+          data['last_status_update'] =  new Date()
+        }
         admin
           .firestore()
           .doc(`driver_lead/leads/prospects/${prospectID}`)
@@ -256,6 +262,7 @@ app.put(
       status: status,
       phone: phoneNum,
       update_datetime: new Date(),
+      last_status_update: new Date()
     };
     console.log("body of status update", req.body);
     if (is_fleet == "true") {
@@ -313,6 +320,7 @@ app.post(
       status: status,
       phone: phoneNum,
       update_datetime: new Date(),
+      last_status_update: new Date()
     };
     admin
       .firestore()
