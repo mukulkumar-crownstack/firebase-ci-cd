@@ -232,7 +232,7 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           data["company_name"] = data.full_name;
           data.lead_status = "company_background_check";
         }
-        if(status !== prospectData.status) {
+        if(status && status !== prospectData.status) {
           data['last_status_update'] =  new Date()
         }
         admin
