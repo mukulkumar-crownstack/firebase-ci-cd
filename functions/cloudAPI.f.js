@@ -94,7 +94,8 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
     created_by: "truora",
     truora_flow_id: truora_flow_id,
     truora_flow_name: truora_flow_name,
-    last_status_update: new Date()
+    last_status_update: new Date(),
+    application_id: `PRD${Math.random().toString().substring(2, 9)}`
   };
   admin
     .firestore()
@@ -196,8 +197,10 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
       if (snapshot.size > 0) {
         const prospectID = snapshot.docs[0].id;
         const prospectData = snapshot.docs[0].data();
-        const zoneDetails =
-          helper_functions_1.getZoneDetailsFromLocationName(location);
+        let zoneDetails = null;
+        if(location) {
+          zoneDetails = helper_functions_1.getZoneDetailsFromLocationName(location);
+        }
         const data = {
           full_name: full_name || prospectData.full_name,
           vehicle_type_codes:
@@ -205,18 +208,19 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           email: email || "",
           session_time: null,
           session_timestamp: null,
-          application_id: `PRD${Math.random().toString().substring(2, 9)}`,
           update_datetime: new Date(),
           application_status: "in_progress",
           lead_status: "vehicle_info_check",
           interview_status_code: "scheduled",
           status: status || prospectData.status,
-          meeting_type: meeting_type || null,
-          vehicle_year: vehicle_year || null,
-          referred_by_name: referred_by_name || null,
-          referred_by_phone: referred_by_phone || null,
-          ...zoneDetails,
+          meeting_type: meeting_type || prospectData.meeting_type || null,
+          vehicle_year: vehicle_year || prospectData.vehicle_year || null,
+          referred_by_name: referred_by_name || prospectData.referred_by_name || null,
+          referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
         };
+        if(zoneDetails) {
+          data = { ...data, ...zoneDetails}
+        }
         if (session_time) {
           const t = moment()
             .add(1, "days")
@@ -448,86 +452,113 @@ app.post(
     // let batch = admin.firestore().batch();
     console.log("start");
     // const sDate = new Date('2023-08-01');
-    const eDate = new Date('2023-09-26');
-    const startfulldate = Timestamp.fromDate(eDate);
+    // const eDate = new Date('2023-09-26');
+    // const startfulldate = Timestamp.fromDate(eDate);
     // const endfulldate = admin.firestore.Timestamp.fromDate(eDate);
-    const driverLeads = admin.firestore().collection("driver_lead/leads/prospects").where("created_datetime", "<=", startfulldate)
-    const flows = [
-      {
-        value: 'IPF285052cb3a1e6cf2c14170842dc374be',
-        name: 'Referidos*'
-      },
-      {
-        value: 'IPF30ba1559a832322d2df21f586080a97f',
-        name: 'Caja seca ONLINE*'
-      },
-      {
-        value: 'IPFefa34628417843f5125388a87c95d288',
-        name: 'Motocicleta* ONLINE*'
-      },
-      {
-        value: 'IPF406f82eb18b7c8cc16a5fd5753be5372',
-        name: 'Defecto *'
-      },
-      {
-        value: 'IPFc8a1e475ef1a613ebbe768da82204b54',
-        name: 'Facebook *'
-      },
-      {
-        value: 'IPFb3b82beccbb10d5a5301ab926248a418',
-        name: 'Sedán, Hatchback,SUV* ONLINE'
-      },
-      {
-        value: 'IPFb22d015fce646eb2aab075505e2024d0',
-        name: 'Van (500kg a 3.5 ton) Online*'
-      },
-      {
-        value: 'IPFe834afdb808354fccd707bb879f1d5da',
-        name: 'Orgánico *'
-      },
-      {
-        value: 'IPFf5c8dd9cf827a1ff49bd9ae833ac8e29',
-        name: 'QA - Testing'
-      }
-    ]
+    // const driverLeads = admin.firestore().collection("driver_lead/leads/prospects")
+    const documentSnapshotArray = await admin.firestore().collection('driver_lead/leads/prospects').get();
+
+    const batchArray = [];
+    batchArray.push(admin.firestore().batch());
+    let operationCounter = 0;
+    let batchIndex = 0;
+    let counter = 0;
+    documentSnapshotArray.forEach((documentSnapshot) => {
+        const documentData = documentSnapshot.data();
+        counter++;
+        // update document data here...
+        documentData['last_status_update'] = documentData.update_datetime;
+
+        batchArray[batchIndex].update(documentSnapshot.ref, documentData);
+        operationCounter++;
+
+        if (operationCounter === 499) {
+          batchArray.push(admin.firestore().batch());
+          batchIndex++;
+          operationCounter = 0;
+          console.log("operations.....",counter);
+        }
+    });
+
+    batchArray.forEach(async batch => {await batch.commit(); console.log("batch commiting.....",counter);});
+    res.status(200).json({ message: "Done fixing data" });
+    // .where("created_datetime", "<=", startfulldate)
+    // const flows = [
+    //   {
+    //     value: 'IPF285052cb3a1e6cf2c14170842dc374be',
+    //     name: 'Referidos*'
+    //   },
+    //   {
+    //     value: 'IPF30ba1559a832322d2df21f586080a97f',
+    //     name: 'Caja seca ONLINE*'
+    //   },
+    //   {
+    //     value: 'IPFefa34628417843f5125388a87c95d288',
+    //     name: 'Motocicleta* ONLINE*'
+    //   },
+    //   {
+    //     value: 'IPF406f82eb18b7c8cc16a5fd5753be5372',
+    //     name: 'Defecto *'
+    //   },
+    //   {
+    //     value: 'IPFc8a1e475ef1a613ebbe768da82204b54',
+    //     name: 'Facebook *'
+    //   },
+    //   {
+    //     value: 'IPFb3b82beccbb10d5a5301ab926248a418',
+    //     name: 'Sedán, Hatchback,SUV* ONLINE'
+    //   },
+    //   {
+    //     value: 'IPFb22d015fce646eb2aab075505e2024d0',
+    //     name: 'Van (500kg a 3.5 ton) Online*'
+    //   },
+    //   {
+    //     value: 'IPFe834afdb808354fccd707bb879f1d5da',
+    //     name: 'Orgánico *'
+    //   },
+    //   {
+    //     value: 'IPFf5c8dd9cf827a1ff49bd9ae833ac8e29',
+    //     name: 'QA - Testing'
+    //   }
+    // ]
     // const driverLeadsRef = admin.firestore().collection("driver_lead");
-    try {
-      // let batch = db.batch();
-      let batch = admin.firestore().batch();
-      const documentSnapshotArray = await driverLeads.get();
-      const records = documentSnapshotArray.docs;
-      const index = documentSnapshotArray.size;
-      console.log(`TOTAL SIZE=====${index}`);
-      for (let i = 0; i < index; i++) {
-        const docRef = records[i].ref;
-        const docData = records[i].data();
-        let flow = 'QA - Testing';
-        if(docData.truora_flow_id) {
-          flow = flows.find(f => f.value === docData.truora_flow_id).name;
-        }
-        let obj = {
-          truora_flow_name: flow
-        };
-        // YOUR UPDATES
-        if (Object.keys(obj).length > 0) {
-          batch.update(docRef, obj);
-        }
-        if ((i + 1) % 499 === 0) { 
-          await batch.commit();
-          batch = admin.firestore().batch();
-        }
-      }
-      // For committing final batch
-      if (!(index % 499 == 0)) {
-        await batch.commit();
-      }
-      res.status(200).json({ message: "Done fixing data" });
-      console.log("write completed");
-    } catch (error) {
-      console.error(`updateWorkers() errored out : ${error.stack}`);
-      res.status(500).json({ message: "error" });
-      // reject(error);
-    }
+    // try {
+    //   // let batch = db.batch();
+    //   let batch = admin.firestore().batch();
+    //   const documentSnapshotArray = await driverLeads.get();
+    //   const records = documentSnapshotArray.docs;
+    //   const index = documentSnapshotArray.size;
+    //   console.log(`TOTAL SIZE=====${index}`);
+    //   for (let i = 0; i < index; i++) {
+    //     const docRef = records[i].ref;
+    //     const docData = records[i].data();
+    //     // let flow = 'QA - Testing';
+    //     // if(docData.truora_flow_id) {
+    //     //   flow = flows.find(f => f.value === docData.truora_flow_id).name;
+    //     // }
+    //     let obj = {
+    //       last_status_update: null
+    //     };
+    //     // YOUR UPDATES
+    //     if (Object.keys(obj).length > 0) {
+    //       batch.update(docRef, obj);
+    //     }
+    //     if ((i + 1) % 499 === 0) { 
+    //       await batch.commit();
+    //       batch = admin.firestore().batch();
+    //     }
+    //   }
+    //   // For committing final batch
+    //   if (!(index % 499 == 0)) {
+    //     await batch.commit();
+    //   }
+    //   res.status(200).json({ message: "Done fixing data" });
+    //   console.log("write completed");
+    // } catch (error) {
+    //   console.error(`updateWorkers() errored out : ${error.stack}`);
+    //   res.status(500).json({ message: "error" });
+    //   // reject(error);
+    // }
     // if (data.key_to_update === 'name') {
     //   // const usDriverCodes = ['independent_driver', 'owner_operator', 'fleet_operator'];
     //   // const mxDriverCodes = ['cliente_independiente', 'flotilleros', 'persona_moral'];
@@ -563,188 +594,4 @@ app.post(
     // }
   }
 );
-// app.post("/token/:source", express.json({ type: "*/*" }), (req, res) => {
-//   const options = {
-//     headers: {
-//       Accept: "application/json",
-//       Authorization: `Account ${
-//         constants_1.YARDSTIK[
-//           helper_functions_1.getYardStikKey(req.params.source)
-//         ].API_KEY
-//       }`,
-//       "Content-Type": "application/json",
-//     },
-//   };
-//   axios
-//     .post(
-//       constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
-//         .TOKEN_URL,
-//       JSON.stringify(req.body),
-//       options
-//     )
-//     .then((response) => {
-//       res = helper_functions_1.responseHeader(res);
-//       res.status(200).json(response.data);
-//     })
-//     .catch((error) => {
-//       res.status(error.response.status).json(error.response.data);
-//     });
-// });
-// app.post("/candidates/:source", express.json({ type: "*/*" }), (req, res) => {
-//   const options = {
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Account ${
-//         constants_1.YARDSTIK[
-//           helper_functions_1.getYardStikKey(req.params.source)
-//         ].API_KEY
-//       }`,
-//       Accept: "application/json",
-//     },
-//   };
-//   axios
-//     .post(
-//       constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
-//         .CANDIDATES_URL,
-//       JSON.stringify(req.body),
-//       options
-//     )
-//     .then((response) => {
-//       res = helper_functions_1.responseHeader(res);
-//       res.status(200).json(response.data);
-//     })
-//     .catch((error) => {
-//       res.status(error.response.status).json(error.response.data);
-//     });
-// });
-// app.post("/invitations/:source", express.json({ type: "*/*" }), (req, res) => {
-//   const options = {
-//     headers: {
-//       "Content-Type": "application/json",
-//       Authorization: `Account ${
-//         constants_1.YARDSTIK[
-//           helper_functions_1.getYardStikKey(req.params.source)
-//         ].API_KEY
-//       }`,
-//     },
-//   };
-//   const body = {
-//     account_package_id:
-//       constants_1.YARDSTIK[
-//         helper_functions_1.getYardStikKey(req.params.source)
-//       ][req.body.account_package_code],
-//     candidate_id: req.body.candidate_id,
-//   };
-//   axios
-//     .post(
-//       constants_1.YARDSTIK[helper_functions_1.getYardStikKey(req.params.source)]
-//         .INVITATIONS_URL,
-//       JSON.stringify(body),
-//       options
-//     )
-//     .then((response) => {
-//       res = helper_functions_1.responseHeader(res);
-//       res.status(200).json(response.data);
-//     })
-//     .catch((error) => {
-//       res.status(error.response.status).json(error.response.data);
-//     });
-// });
-// app.get("/reports/:id/:source", express.json({ type: "*/*" }), (req, res) => {
-//   const options = {
-//     headers: {
-//       Authorization: `Account ${
-//         constants_1.YARDSTIK[
-//           helper_functions_1.getYardStikKey(req.params.source)
-//         ].API_KEY
-//       }`,
-//     },
-//   };
-//   axios
-//     .get(
-//       `${
-//         constants_1.YARDSTIK[
-//           helper_functions_1.getYardStikKey(req.params.source)
-//         ].REPORTS_URL
-//       }/${req.params.id}`,
-//       options
-//     )
-//     .then((response) => {
-//       res = helper_functions_1.responseHeader(res);
-//       res.status(200).json(response.data);
-//     })
-//     .catch((error) => {
-//       console.log(error);
-//       res.status(error.response.status).json(error.response.data);
-//     });
-// });
-// app.get(
-//   "/invitations/:id/:source",
-//   express.json({ type: "*/*" }),
-//   (req, res) => {
-//     const options = {
-//       headers: {
-//         Authorization: `Account ${
-//           constants_1.YARDSTIK[
-//             helper_functions_1.getYardStikKey(req.params.source)
-//           ].API_KEY
-//         }`,
-//       },
-//     };
-//     axios
-//       .get(
-//         `${
-//           constants_1.YARDSTIK[
-//             helper_functions_1.getYardStikKey(req.params.source)
-//           ].INVITATIONS_URL
-//         }/${req.params.id}`,
-//         options
-//       )
-//       .then((response) => {
-//         res = helper_functions_1.responseHeader(res);
-//         res.status(200).json(response.data);
-//       })
-//       .catch((error) => {
-//         console.log(error);
-//         res.status(error.response.status).json(error.response.data);
-//       });
-//   }
-// );
-// app.get(
-//   "/accounts/packages/:source",
-//   express.json({ type: "*/*" }),
-//   (req, res) => {
-//     const options = {
-//       headers: {
-//         Authorization: `Account ${
-//           constants_1.YARDSTIK[
-//             helper_functions_1.getYardStikKey(req.params.source)
-//           ].API_KEY
-//         }`,
-//       },
-//     };
-//     axios
-//       .get(
-//         `${
-//           constants_1.YARDSTIK[
-//             helper_functions_1.getYardStikKey(req.params.source)
-//           ].ACCOUNTS_URL
-//         }/${
-//           constants_1.YARDSTIK[
-//             helper_functions_1.getYardStikKey(req.params.source)
-//           ].ACCOUNT_ID
-//         }/packages`,
-//         options
-//       )
-//       .then((response) => {
-//         res = helper_functions_1.responseHeader(res);
-//         res.status(200).json(response.data);
-//       })
-//       .catch((error) => {
-//         console.log(error);
-//         res.status(error.response.status).json(error.response.data);
-//       });
-//   }
-// );
 exports.cloudAPI = app;
-//# sourceMappingURL=cloudAPI.f.js.map
