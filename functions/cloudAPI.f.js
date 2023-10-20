@@ -111,7 +111,7 @@ app.post("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
           .set(data)
           .then((firebaseRes) => {
             console.log("success");
-            res.status(200).json({ message: "added the truora data", status: prospectData.status });
+            res.status(200).json({ message: "added the truora data", status: data.status });
           })
           .catch((err) => {
             console.log("error", err);
@@ -201,7 +201,7 @@ app.put("/truora/prospects/add", express.json({ type: "*/*" }), (req, res) => {
         if(location) {
           zoneDetails = helper_functions_1.getZoneDetailsFromLocationName(location);
         }
-        const data = {
+        let data = {
           full_name: full_name || prospectData.full_name,
           vehicle_type_codes:
             (vehicles && [vehicles]) || prospectData.vehicle_type_codes || null,
