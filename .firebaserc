@@ -1,6 +1,6 @@
 {
   "projects": {
-    "default": "partrunner-qa",
+    "qa": "partrunner-qa",
     "staging": "partrunner-staging",
     "prod": "partrunner-prod"
   },
