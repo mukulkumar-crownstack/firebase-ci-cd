@@ -137,7 +137,7 @@ exports.putProspect = async (req, res, next) => {
         if (location) {
             zoneDetails = helper_functions.getZoneDetailsFromLocationName(location);
         }
-        const data = {
+        let data = {
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes:
                 (vehicles && [vehicles]) || prospectData.vehicle_type_codes || null,
