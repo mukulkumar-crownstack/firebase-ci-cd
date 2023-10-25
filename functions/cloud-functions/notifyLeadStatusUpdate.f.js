@@ -1,23 +1,22 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.notifyLeadStatusUpdate = void 0;
-const constants_1 = require("./utils/constants");
-const enums_1 = require("./utils/enums");
-const helper_functions_1 = require("./utils/helper.functions");
-exports.notifyLeadStatusUpdate = (change, context) => {
+const constants = require("../utils/constants");
+const enums = require("../utils/enums");
+const helper_functions = require("../utils/helper.functions");
+const { deleteDocumentFromAlgolia, saveDocumentInAlgolia } = require("../models/algolia.model");
+
+exports.notifyLeadStatusUpdate_f = async (change, context) => {
   // Get an object representing the document
   const newValue = change.after.data();
   const previousValue = change.before.data();
   const translation =
-    newValue.phone_country_code === "us" ? constants_1.en : constants_1.es;
+    newValue.phone_country_code === "us" ? constants.en : constants.es;
   const driverType =
     translation[
-      helper_functions_1.getDriverType(
-        newValue.driver_type_code,
-        newValue.phone_country_code
-      )
+    helper_functions.getDriverType(
+      newValue.driver_type_code,
+      newValue.phone_country_code
+    )
     ];
-  const vehicleType = helper_functions_1.getVehicleType(
+  const vehicleType = helper_functions.getVehicleType(
     newValue.vehicle_type_codes,
     newValue.phone_country_code
   );
@@ -33,8 +32,8 @@ exports.notifyLeadStatusUpdate = (change, context) => {
     newValue.phone_country_code === "us"
       ? "+1"
       : newValue.phone_country_code === "mx"
-      ? "+52"
-      : "+91";
+        ? "+52"
+        : "+91";
   const sendSmsTo = `${countryCode}${phone}`;
   const smsFrom =
     newValue.phone_country_code === "us" ? "+19895753391" : "+528153512795";
@@ -44,17 +43,16 @@ exports.notifyLeadStatusUpdate = (change, context) => {
     newValue.lead_status !== previousValue.lead_status ||
     newValue.application_status !== previousValue.application_status
   ) {
-    if (leadStatus === enums_1.LeadStatus.APPLIED) {
+    if (leadStatus === enums.LeadStatus.APPLIED) {
       smsText = `${translation[
         "Thank you for applying with Partrunner. Your application ID is :applicationID .\n\nIf you want to continue or make changes, click here"
       ].replace(
         ":applicationID",
         applicationID
-      )} ${helper_functions_1.getPartrunnerBaseURL("driver")}/${
-        translation.language
-      }/login`;
+      )} ${helper_functions.getPartrunnerBaseURL("driver")}/${translation.language
+        }/login`;
     }
-    if (applicationStatus === enums_1.ApplicationStatus.UNDER_REVIEW) {
+    if (applicationStatus === enums.ApplicationStatus.UNDER_REVIEW) {
       // smsText = `${translation["Your application to drive with PartRunner is under review. We will contact you again to train you and answer any questions soon."]}`;
       slackText = `
           ${translation["A new driver has been put under review"]}
@@ -65,10 +63,10 @@ exports.notifyLeadStatusUpdate = (change, context) => {
 
           ${translation["Driver Type"]}: ${driverType}
 
-          ${translation["Link"]}: ${helper_functions_1.getPartrunnerBaseURL('admin')}/${translation.language}/driver-leads/detail/${newValue.driver_type_code}_${newValue.phone_country_code}_${newValue.phone}
+          ${translation["Link"]}: ${helper_functions.getPartrunnerBaseURL('admin')}/${translation.language}/driver-leads/detail/${newValue.driver_type_code}_${newValue.phone_country_code}_${newValue.phone}
       `;
     }
-    if (applicationStatus === enums_1.ApplicationStatus.REJECTED) {
+    if (applicationStatus === enums.ApplicationStatus.REJECTED) {
       const email =
         newValue.phone_country_code === "mx"
           ? "conductores@partrunner.com"
@@ -90,7 +88,7 @@ exports.notifyLeadStatusUpdate = (change, context) => {
         "Sorry, after verifying your information we are not able to move forward with your application to work as a driver with PartRunner. You can contact us on :driverEmail for more information."
       ].replace(":driverEmail", email)}`;
     }
-    if (applicationStatus === enums_1.ApplicationStatus.STAND_BY) {
+    if (applicationStatus === enums.ApplicationStatus.STAND_BY) {
       if (newValue.phone_country_code === "mx") {
         slackText = `
           ${translation["A new driver has been put on hold in the process"]}
@@ -105,7 +103,7 @@ exports.notifyLeadStatusUpdate = (change, context) => {
         `;
       }
     }
-    if (applicationStatus === enums_1.ApplicationStatus.APPROVED) {
+    if (applicationStatus === enums.ApplicationStatus.APPROVED) {
       if (newValue.phone_country_code === "mx") {
         slackText = `
           ${translation["A new driver has been approved"]}
@@ -119,7 +117,7 @@ exports.notifyLeadStatusUpdate = (change, context) => {
           ${translation["Vehicle Types"]}: ${vehicleType}
         `;
       } else {
-        const available = helper_functions_1.getDriverAvailablity(
+        const available = helper_functions.getDriverAvailablity(
           newValue.availability_of_driver,
           newValue.phone_country_code
         );
@@ -142,7 +140,7 @@ exports.notifyLeadStatusUpdate = (change, context) => {
       smsText = `${translation["Welcome to the PartRunner Team! You have been approved to drive with us. An email will be sent shortly with instructions on how to start using the Driver App and start earning extra money. Stay tuned!"]}`;
     }
     if (smsText) {
-      helper_functions_1.sendSms(sendSmsTo, smsText, smsFrom, (twilioRes) => {
+      helper_functions.sendSms(sendSmsTo, smsText, smsFrom, (twilioRes) => {
         if (twilioRes.status === "success") {
           console.log("success");
           res.status(200).json({ msg: twilioRes });
@@ -153,10 +151,15 @@ exports.notifyLeadStatusUpdate = (change, context) => {
       });
     }
     if (slackText) {
-      helper_functions_1.sendSlackNotification(
+      helper_functions.sendSlackNotification(
         slackText,
         newValue.phone_country_code
       );
     }
+  }
+
+  if (newValue && previousValue) {
+    await deleteDocumentFromAlgolia(change.after);
+    await saveDocumentInAlgolia(change.after);
   }
 };

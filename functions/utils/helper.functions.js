@@ -1,26 +1,26 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.getDriverAvailablity = exports.geENVName = exports.getPartrunnerBaseURL = exports.responseHeader = exports.getYardStikKey = exports.sendSms = exports.sendSlackNotification = exports.getVehicleType = exports.getDriverType = void 0;
 const axios = require('axios');
 const admin = require("firebase-admin");
-const constants_1 = require("./constants");
-const enums_1 = require("./enums");
+const constants = require("./constants");
+const enums = require("./enums");
+
 exports.getDriverType = ((type, countryCode) => {
     return countryCode === 'mx'
-        ? type === enums_1.Driver_Type_Code.cliente_independiente
-            ? enums_1.MX_Driver_Types.cliente_independiente
-            : (type === enums_1.Driver_Type_Code.flotilleros ? enums_1.MX_Driver_Types.flotilleros : enums_1.MX_Driver_Types.persona_moral)
-        : type === enums_1.Driver_Type_Code.independent_driver
-            ? enums_1.US_Driver_Types.independent_driver
-            : (type === enums_1.Driver_Type_Code.owner_operator ? enums_1.US_Driver_Types.owner_operator : enums_1.US_Driver_Types.fleet_operator);
+        ? type === enums.Driver_Type_Code.cliente_independiente
+            ? enums.MX_Driver_Types.cliente_independiente
+            : (type === enums.Driver_Type_Code.flotilleros ? enums.MX_Driver_Types.flotilleros : enums.MX_Driver_Types.persona_moral)
+        : type === enums.Driver_Type_Code.independent_driver
+            ? enums.US_Driver_Types.independent_driver
+            : (type === enums.Driver_Type_Code.owner_operator ? enums.US_Driver_Types.owner_operator : enums.US_Driver_Types.fleet_operator);
 });
+
 exports.getVehicleType = ((type, country) => {
-    const vehicles = country === 'mx' ? enums_1.MX_Vehicle_Types : enums_1.US_Vehicle_Types;
+    const vehicles = country === 'mx' ? enums.MX_Vehicle_Types : enums.US_Vehicle_Types;
     return type.map(vehicle => vehicles[vehicle]).join(', ');
 });
+
 exports.sendSlackNotification = ((text, countryCode) => {
     const env = exports.geENVName();
-    const slackHookUrl = constants_1.Slack_URL[env][countryCode];
+    const slackHookUrl = constants.Slack_URL[env][countryCode];
     const options = {
         headers: {
             "Content-Type": "application/json"
@@ -33,6 +33,7 @@ exports.sendSlackNotification = ((text, countryCode) => {
         console.log("Error", error);
     });
 });
+
 exports.sendSms = ((to, text, from, cb) => {
     admin.firestore().collection("messages").add({
         to: to,
@@ -66,17 +67,18 @@ const responseHeader = (res) => {
 exports.responseHeader = responseHeader;
 const getPartrunnerBaseURL = (panelName) => {
     const envName = exports.geENVName();
-    return constants_1.partunnerBaseUrl[panelName][envName];
+    return constants.partunnerBaseUrl[panelName][envName];
 };
 exports.getPartrunnerBaseURL = getPartrunnerBaseURL;
-const geENVName = () => {
+
+exports.geENVName = (() => {
     const projectId = admin.instanceId().app.options.projectId;
-    return constants_1.firebaseProjectID[projectId];
-};
-exports.geENVName = geENVName;
+    return constants.firebaseProjectID[projectId];
+});
+
 const getDriverAvailablity = (availablity, countryCode) => {
     const label = countryCode === 'mx' ? 'label_es' : 'label_en';
-    return availablity && availablity.length ? availablity.map((day, idx) => day ? constants_1.driverAvailabiltyData[idx][label] : day).filter(v => v).join('; ') : '';
+    return availablity && availablity.length ? availablity.map((day, idx) => day ? constants.driverAvailabiltyData[idx][label] : day).filter(v => v).join('; ') : '';
 };
 exports.getDriverAvailablity = getDriverAvailablity;
 const S4 = () => {
@@ -97,7 +99,7 @@ exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
 });
 
 exports.getZoneDetailsFromLocationName = ((locationName) => {
-    const zoneDetails = constants_1.zoneData[locationName];
+    const zoneDetails = constants.zoneData[locationName];
     return zoneDetails ? zoneDetails: {
         operating_city: {
             "Country": "MX",

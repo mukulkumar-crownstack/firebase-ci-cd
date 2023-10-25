@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.driverAvailabiltyData = exports.partunnerBaseUrl = exports.firebaseProjectID = exports.YARDSTIK = exports.Slack_URL = exports.es = exports.en = void 0;
 exports.en = {
     "language": "en",
@@ -425,4 +423,23 @@ exports.zoneData = {
         zipcode: 78557
     }
 }
+
+exports.algoliaIndex = {
+    prospect: {
+        qa: process.env.QA_ALGOLIA_PROSPECT,
+        staging: process.env.STAGING_ALGOLIA_PROSPECT,
+        production: process.env.PROD_ALGOLIA_PROSPECT,
+    },
+    qualified_lead: {
+        qa: process.env.QA_ALGOLIA_QUALIFIED_LEAD,
+        staging: process.env.STAGING_ALGOLIA_QUALIFIED_LEAD,
+        production: process.env.PROD_ALGOLIA_QUALIFIED_LEAD,
+    }
+};
+
+exports.algoliaClientKey = {
+    qa: process.env.QA_ALGOLIA_API_KEY,
+    staging: process.env.STAGING_ALGOLIA_API_KEY,
+    production: process.env.PROD_ALGOLIA_API_KEY,
+};
 //# sourceMappingURL=constants.js.map

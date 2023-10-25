@@ -1,3 +1,5 @@
+const admin = require("firebase-admin");
+
 exports.getFirestoreRecord = (collectionsPath, query) => {
     const { key, operator, value, isMultiple = false } = query;
     const ref = admin.firestore().collection(collectionsPath).where(key, operator, value)
