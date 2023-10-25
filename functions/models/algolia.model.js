@@ -4,14 +4,13 @@ const helper_functions = require("../utils/helper.functions");
 
 const ALGOLIA_APPLICATION_ID = 'OD87HIQS3D';
 
-const getENV = () => {
-    const env = helper_functions.geENVName();
-    return env;
-}
+const getENV = helper_functions.geENVName();
+
+const ALGOLIA_API_KEY = algoliaClientKey[getENV];
 
 const algoliaClient = algoliasearch.default(
     ALGOLIA_APPLICATION_ID,
-    algoliaClientKey[getENV]
+    ALGOLIA_API_KEY
 );
 
 const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead[getENV]);
