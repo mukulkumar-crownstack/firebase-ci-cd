@@ -4,7 +4,10 @@ const helper_functions = require("../utils/helper.functions");
 
 const ALGOLIA_APPLICATION_ID = 'OD87HIQS3D';
 
-const getENV = helper_functions.geENVName();
+const getENV = () => {
+    const env = helper_functions.geENVName();
+    return env;
+}
 
 const ALGOLIA_API_KEY = algoliaClientKey[getENV];
 
