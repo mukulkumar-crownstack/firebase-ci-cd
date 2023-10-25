@@ -12,12 +12,12 @@ const algoliaClient = algoliasearch.default(
     algoliaClientKey[getENV]
 );
 
-exports.algoliaProspectIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead[getENV]);
+const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead[getENV]);
 
 exports.deleteDocumentFromAlgolia = async (snapshot) => {
     if (snapshot.exists) {
         const objectID = snapshot.id;
-        await algoliaProspectIndex.deleteObject(objectID);
+        await algoliaQualifiedLeadIndex.deleteObject(objectID);
     }
 }
 
@@ -39,7 +39,7 @@ exports.saveDocumentInAlgolia = async (snapshot) => {
             if (record.session_date) {
                 record.session_date = new Date(record.session_date.toDate()).valueOf();
             }
-            await qualifiedLeadAlgoIndex.saveObject(record);
+            await algoliaQualifiedLeadIndex.saveObject(record);
         }
     }
 }

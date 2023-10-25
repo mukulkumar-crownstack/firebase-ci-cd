@@ -2,7 +2,7 @@
 const admin = require("firebase-admin");
 const { Timestamp } = require("firebase-admin/firestore");
 
-const { algoliaProspectIndex } = require("../models/algolia.model");
+// const { algoliaProspectIndex } = require("../models/algolia.model");
 
 exports.postMigrationsData = async (req, res, next) => {
     console.log("start");
