@@ -9,14 +9,14 @@ const getENV = () => {
     return env;
 }
 
-const ALGOLIA_API_KEY = algoliaClientKey[getENV];
+const ALGOLIA_API_KEY = algoliaClientKey.qa;
 
 const algoliaClient = algoliasearch.default(
     ALGOLIA_APPLICATION_ID,
     ALGOLIA_API_KEY
 );
 
-const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead[getENV]);
+const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead.qa);
 
 exports.deleteDocumentFromAlgolia = async (snapshot) => {
     if (snapshot.exists) {
