@@ -2,13 +2,15 @@ const algoliasearch = require("algoliasearch");
 const { algoliaIndex, algoliaClientKey } = require("../utils/constants");
 const helper_functions = require("../utils/helper.functions");
 
+const ALGOLIA_APPLICATION_ID = 'OD87HIQS3D';
+
 const getENV = () => {
     const env = helper_functions.geENVName();
     return env;
 }
 
 const algoliaClient = algoliasearch.default(
-    process.env.ALGOLIA_APPLICATION_ID,
+    ALGOLIA_APPLICATION_ID,
     algoliaClientKey[getENV]
 );
 
