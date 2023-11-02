@@ -28,46 +28,63 @@ exports.getProspectByPhone = async (req, res, next) => {
 };
 
 exports.postProspect = async (req, res, next) => {
-    const { phone, full_name, truora_flow_id, truora_flow_name } = req.body;
+    const {
+        phone,
+        full_name,
+        truora_flow_id,
+        truora_flow_name,
+        referred_by_name,
+        referred_by_phone
+    } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
-    const snapshot = await getFirestoreRecord(leadCollectionPath, {
+    const leadSnapshot = await getFirestoreRecord(leadCollectionPath, {
         key: "phone",
         operator: "==",
         value: phoneNumber,
     });
-    if (snapshot.size === 0) {
-        const prospectData = {
-            full_name: full_name,
-            phone: phoneNumber,
-            prospect_uuid: helper_functions.generateUUID(),
-            phone_country_code: "mx",
-            status: "prospect",
-            created_datetime: new Date(),
-            update_datetime: new Date(),
-            user_language: "es",
-            is_truora: true,
-            created_by: "truora",
-            truora_flow_id: truora_flow_id,
-            truora_flow_name: truora_flow_name,
-            last_status_update: new Date(),
-            application_id: `PRD${Math.random().toString().substring(2, 9)}`,
-        };
-        const docPath = leadDocPath.replace(
-            ":prospect_uuid",
-            prospectData.prospect_uuid
-        );
-        const addRecord = await addFirestoreRecord(docPath, prospectData);
-        if (addRecord && addRecord.status === 200) {
-            res.status(200).json({
-                message: "added the truora data",
-                status: prospectData.status,
-            });
+    if (leadSnapshot.size === 0) {
+        const qualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
+        if (qualifiedLeadSnapshot.size === 0) {
+            const prospectData = {
+                full_name: full_name,
+                phone: phoneNumber,
+                prospect_uuid: helper_functions.generateUUID(),
+                phone_country_code: "mx",
+                status: "prospect",
+                created_datetime: new Date(),
+                update_datetime: new Date(),
+                user_language: "es",
+                is_truora: true,
+                created_by: "truora",
+                truora_flow_id: truora_flow_id,
+                truora_flow_name: truora_flow_name,
+                last_status_update: new Date(),
+                application_id: `PRD${Math.random().toString().substring(2, 9)}`,
+                referred_by_name: referred_by_name || null,
+                referred_by_phone: referred_by_phone || null
+            };
+            const docPath = leadDocPath.replace(
+                ":prospect_uuid",
+                prospectData.prospect_uuid
+            );
+            const addRecord = await addFirestoreRecord(docPath, prospectData);
+            if (addRecord && addRecord.status === 200) {
+                res.status(200).json({
+                    message: "added the truora data",
+                    status: prospectData.status,
+                });
+            } else {
+                res.status(500).json(addRecord.error);
+            }
         } else {
-            res.status(500).json(addRecord.error);
+            res.status(200).json({
+                message: `lead already present with phone: +52 ${phoneNumber}`,
+                status: 'qualified'
+            });
         }
     } else {
-        // const prospectID = snapshot.docs[0].id;
-        const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
+        // const prospectID = leadSnapshot.docs[0].id;
+        const { prospectID, prospectData } = getLeadFromSnapshot(leadSnapshot);
         const docPath = leadDocPath.replace(":prospect_uuid", prospectID);
         const data = {
             created_datetime: new Date(),
@@ -124,6 +141,11 @@ exports.putProspect = async (req, res, next) => {
         referred_by_phone,
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
+    let vehicleCodes = [];
+    
+    if(vehicles) {
+        vehicleCodes = vehicles.split(',');
+    }
 
     const snapshot = await getFirestoreRecord(leadCollectionPath, {
         key: "phone",
@@ -140,7 +162,7 @@ exports.putProspect = async (req, res, next) => {
         let data = {
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes:
-                (vehicles && [vehicles]) || prospectData.vehicle_type_codes || null,
+                (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
             email: email || "",
             session_time: null,
             session_timestamp: null,
@@ -245,25 +267,12 @@ exports.postProspectQualify = async (req, res, next) => {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const leadDocumentPath = leadDocPath.replace(":prospect_uuid", prospectID);
         if (prospectData) {
-            const query ={
-                key: "phone",
-                operator: "==",
-                value: phoneNumber,
-                isMultiple: true,
-                key2: "phone_country_code",
-                operator2: "==",
-                value2: prospectData.phone_country_code
-            };
-            const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, query);
+            const snapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
             if (snapshot.size === 0) {
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
                 if (addRecord && addRecord.status === 200) {
-                    // res.status(200).json({
-                    //     message: "added the truora data",
-                    //     status: prospectData.status,
-                    // });
                 } else {
                     res.status(500).json(addRecord.error);
                 }
@@ -291,6 +300,19 @@ exports.postProspectQualify = async (req, res, next) => {
         }
     }
 };
+
+const checkIfLeadAlreadyPresentAsQualified = (phoneNumber, phone_country_code) => {
+    const query = {
+        key: "phone",
+        operator: "==",
+        value: phoneNumber,
+        isMultiple: true,
+        key2: "phone_country_code",
+        operator2: "==",
+        value2: phone_country_code
+    };
+    return getFirestoreRecord(qulifiedleadCollectionPath, query);
+}
 
 const addLog = (logDocPath, currentStatus) => {
     const logVal = {
