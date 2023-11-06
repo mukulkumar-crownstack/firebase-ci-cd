@@ -74,7 +74,7 @@ exports.postProspect = async (req, res, next) => {
                 res.status(200).json({
                     message: "added the truora data",
                     status: prospectData.status,
-                    is_avalabile: false
+                    is_avalabile: true
                 });
             } else {
                 res.status(500).json(addRecord.error);
@@ -232,7 +232,7 @@ exports.putProspectStatus = async (req, res, next) => {
         update_datetime: new Date(),
         last_status_update: new Date(),
     };
-    if (is_fleet == "true") {
+    if (is_fleet.toString() == "true") {
         data.driver_type_code = "flotilleros";
     } else {
         data.driver_type_code = "cliente_independiente";

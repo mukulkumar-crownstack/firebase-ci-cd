@@ -116,7 +116,8 @@ exports.getZoneDetailsFromLocationName = ((locationName) => {
         pr_market: "cmx",
         pr_zone: "zone-0",
         pr_zone_code: "mx-cmx-zone-0",
-        zipcode: 1000
+        zipcode: 1000,
+        location: locationName
     };
 })
 //# sourceMappingURL=helper.functions.js.map
