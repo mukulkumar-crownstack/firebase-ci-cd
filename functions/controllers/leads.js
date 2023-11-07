@@ -102,7 +102,7 @@ exports.postProspect = async (req, res, next) => {
                 update_datetime: new Date(),
                 truora_flow_name: truora_flow_name,
                 truora_flow_id: truora_flow_id,
-                created_by: created_by,
+                created_by: created_by || 'truora',
                 last_status_update: new Date(),
             };
             if (prospectData.status === "rejected") {
