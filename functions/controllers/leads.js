@@ -34,7 +34,9 @@ exports.postProspect = async (req, res, next) => {
         truora_flow_id,
         truora_flow_name,
         referred_by_name,
-        referred_by_phone
+        referred_by_phone,
+        created_by,
+        user_language
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     const leadSnapshot = await getFirestoreRecord(leadCollectionPath, {
@@ -53,11 +55,11 @@ exports.postProspect = async (req, res, next) => {
                 status: "prospect",
                 created_datetime: new Date(),
                 update_datetime: new Date(),
-                user_language: "es",
-                is_truora: true,
-                created_by: "truora",
-                truora_flow_id: truora_flow_id,
-                truora_flow_name: truora_flow_name,
+                user_language: user_language || "es",
+                // is_truora: true,
+                created_by: created_by || 'truora',
+                truora_flow_id: truora_flow_id || null,
+                truora_flow_name: truora_flow_name || null,
                 last_status_update: new Date(),
                 application_id: `PRD${Math.random().toString().substring(2, 9)}`,
                 referred_by_name: referred_by_name || null,
@@ -72,6 +74,7 @@ exports.postProspect = async (req, res, next) => {
                 res.status(200).json({
                     message: "added the truora data",
                     status: prospectData.status,
+                    is_avalabile: true
                 });
             } else {
                 res.status(500).json(addRecord.error);
@@ -79,48 +82,60 @@ exports.postProspect = async (req, res, next) => {
         } else {
             res.status(200).json({
                 message: `lead already present with phone: +52 ${phoneNumber}`,
-                status: 'qualified'
+                status: 'qualified',
+                is_avalabile: false
             });
         }
     } else {
         // const prospectID = leadSnapshot.docs[0].id;
         const { prospectID, prospectData } = getLeadFromSnapshot(leadSnapshot);
         const docPath = leadDocPath.replace(":prospect_uuid", prospectID);
-        const data = {
-            created_datetime: new Date(),
-            update_datetime: new Date(),
-            truora_flow_name: truora_flow_name,
-            truora_flow_id: truora_flow_id,
-            created_by: "truora",
-            last_status_update: new Date(),
-        };
-        if (prospectData.status === "rejected") {
-            data.status = "prospect";
-            const updateRecord = await updateFirestoreRecord(docPath, data);
-            if (updateRecord && updateRecord.status === 200) {
-                res.status(200).json({
-                    message:
-                        "prospect already present with update from rejected to prospect status in firestore",
-                    status: prospectData.status,
-                });
-            } else {
-                res.status(500).json(updateRecord.error);
-            }
-        } else if (prospectData.status === "qualified") {
-            res.status(201).json({
-                message: "prospect already present with qualified status",
+        if(created_by && created_by === 'admin') {
+            res.status(200).json({
+                message: "prospect already present",
                 status: prospectData.status,
+                is_avalabile: false
             });
         } else {
-            const updateRecord = await updateFirestoreRecord(docPath, data);
-            if (updateRecord && updateRecord.status === 200) {
-                res.status(200).json({
-                    message:
-                        "prospect already present with update from rejected to prospect status in firestore",
+            const data = {
+                created_datetime: new Date(),
+                update_datetime: new Date(),
+                truora_flow_name: truora_flow_name,
+                truora_flow_id: truora_flow_id,
+                created_by: created_by,
+                last_status_update: new Date(),
+            };
+            if (prospectData.status === "rejected") {
+                data.status = "prospect";
+                const updateRecord = await updateFirestoreRecord(docPath, data);
+                if (updateRecord && updateRecord.status === 200) {
+                    res.status(200).json({
+                        message:
+                            "prospect already present with update from rejected to prospect status in firestore",
+                        status: prospectData.status,
+                        is_avalabile: false
+                    });
+                } else {
+                    res.status(500).json(updateRecord.error);
+                }
+            } else if (prospectData.status === "qualified") {
+                res.status(201).json({
+                    message: "prospect already present with qualified status",
                     status: prospectData.status,
+                    is_avalabile: false
                 });
             } else {
-                res.status(500).json(updateRecord.error);
+                const updateRecord = await updateFirestoreRecord(docPath, data);
+                if (updateRecord && updateRecord.status === 200) {
+                    res.status(200).json({
+                        message:
+                            "prospect already present with update from rejected to prospect status in firestore",
+                        status: prospectData.status,
+                        is_avalabile: false
+                    });
+                } else {
+                    res.status(500).json(updateRecord.error);
+                }
             }
         }
     }
@@ -217,7 +232,7 @@ exports.putProspectStatus = async (req, res, next) => {
         update_datetime: new Date(),
         last_status_update: new Date(),
     };
-    if (is_fleet == "true") {
+    if (is_fleet.toString() == "true") {
         data.driver_type_code = "flotilleros";
     } else {
         data.driver_type_code = "cliente_independiente";

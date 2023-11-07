@@ -276,7 +276,8 @@ exports.zoneData = {
         pr_market: "cmx",
         pr_zone: "zone-0",
         pr_zone_code: "mx-cmx-zone-0",
-        zipcode: 1000
+        zipcode: 1000,
+        location: "Ciudad de México"
     },
     "Estado de México" : {
         operating_city: {
@@ -294,7 +295,8 @@ exports.zoneData = {
         pr_market: "mex",
         pr_zone: "zone-1",
         pr_zone_code: "mx-mex-zone-1",
-        zipcode: 53598
+        zipcode: 53598,
+        location: "Estado de México"
     }, 
     "Puebla" : {
         operating_city: {
@@ -312,7 +314,8 @@ exports.zoneData = {
         pr_market: "pue",
         pr_zone: "zone-0",
         pr_zone_code: "mx-mex-zone-0",
-        zipcode: 72000
+        zipcode: 72000,
+        location: "Puebla"
     },
     "Jalisco" : {
         operating_city: {
@@ -330,7 +333,8 @@ exports.zoneData = {
         pr_market: "gdl",
         pr_zone: "zone-0",
         pr_zone_code: "mx-mex-zone-0",
-        zipcode: 44100
+        zipcode: 44100,
+        location: "Jalisco"
     },
     "Nuevo León" : {
         operating_city: {
@@ -348,7 +352,8 @@ exports.zoneData = {
         pr_market: "mty",
         pr_zone: "zone-0",
         pr_zone_code: "mx-mex-zone-0",
-        zipcode: 64600
+        zipcode: 64600,
+        location: "Nuevo León"
     },
     "Toluca" : {
         operating_city: {
@@ -366,7 +371,8 @@ exports.zoneData = {
         pr_market: "tol",
         pr_zone: "zone-1",
         pr_zone_code: "mx-mex-zone-1",
-        zipcode: 50000
+        zipcode: 50000,
+        location: "Toluca"
     },
     "Querétaro": {
         operating_city: {
@@ -384,7 +390,8 @@ exports.zoneData = {
         pr_market: "qro",
         pr_zone: "zone-0",
         pr_zone_code: "mx-mex-zone-0",
-        zipcode: 76000
+        zipcode: 76000,
+        location: "Querétaro"
     },
     "Guanajuato": {
         operating_city: {
@@ -402,7 +409,8 @@ exports.zoneData = {
         pr_market: "gto",
         pr_zone: "zone-0",
         pr_zone_code: "mx-mex-zone-0",
-        zipcode: 37000
+        zipcode: 37000,
+        location: "Guanajuato"
     },
     "Hidalgo": {
         operating_city: {
@@ -420,7 +428,8 @@ exports.zoneData = {
         pr_market: "pch",
         pr_zone: "zone-1",
         pr_zone_code: "mx-pch-zone-1",
-        zipcode: 78557
+        zipcode: 78557,
+        location: "Hidalgo"
     }
 }
 

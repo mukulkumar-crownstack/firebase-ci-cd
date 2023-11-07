@@ -43,6 +43,7 @@ exports.saveDocumentInAlgolia = async (snapshot) => {
             if (record.session_date) {
                 record.session_date = new Date(record.session_date.toDate()).valueOf();
             }
+            console.log(record.phone, algoliaIndex.qualified_lead.staging, ALGOLIA_API_KEY)
             await algoliaQualifiedLeadIndex.saveObject(record);
         }
     }
