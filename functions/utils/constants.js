@@ -1,5 +1,3 @@
-"use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
 exports.driverAvailabiltyData = exports.partunnerBaseUrl = exports.firebaseProjectID = exports.YARDSTIK = exports.Slack_URL = exports.es = exports.en = void 0;
 exports.en = {
     "language": "en",
@@ -23,6 +21,7 @@ exports.en = {
     "A new driver has scheduled interview": "A new driver has scheduled interview",
     "A new driver has uploaded the onboarding documents": "A new driver has uploaded the onboarding documents",
     "A new driver has been put on hold in the process": "A new driver has been put on hold in the process.",
+    "A new driver has been put under review": "A new driver has been put under review.",
     "A new driver has been rejected in the process": "A new driver has been rejected in the process",
     "A new driver has completed the PR account": "A new driver has completed the PR account",
     "A new driver has been approved": "A new driver has been approved",
@@ -46,7 +45,7 @@ exports.es = {
     "Vehicle Types": "Tipo de Vehículo",
     "Interview date & time": "Fecha y hora de entrevista",
     "Driver Details": "Detalles del Conductor",
-    "Link": "Link",
+    "Link": "Enlace",
     "Independent Driver": "Conductor independiente",
     "Owner Operator": "Operador propietario",
     "Fleet Operator": "Operador de flota",
@@ -59,6 +58,7 @@ exports.es = {
     "A new driver has scheduled interview": "Un nuevo conductor ha agendado cita.",
     "A new driver has uploaded the onboarding documents": "Un nuevo conductor ha subido su documentación.",
     "A new driver has been put on hold in the process": "Un nuevo conductor se encuentra en espera de continuar con su proceso.",
+    "A new driver has been put under review": "Se ha revisado un nuevo controlador.",
     "A new driver has been rejected in the process": "Un nuevo conductor ha sido rechazado en el proceso.",
     "A new driver has completed the PR account": "Un nuevo conductor ha completado el alta de cuenta de PR",
     "A new driver has been approved": "Un nuevo conductor ha sido aprobado.",
@@ -258,4 +258,197 @@ exports.driverAvailabiltyData = [
         "label_en": "Sunday, Overnight runs"
     }
 ];
+
+exports.zoneData = {
+    "Ciudad de México": {
+        operating_city: {
+            "Country": "MX",
+            "State": "CMX",
+            "City": "CDMX",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 1000,
+            "PR Zone Code": "mx-cmx-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "cmx",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-cmx-zone-0",
+        zipcode: 1000,
+        location: "Ciudad de México"
+    },
+    "Estado de México" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "MEX",
+            "City": "Toluca",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 53598,
+            "PR Zone Code": "mx-mex-zone-1"
+        },
+        pr_country: "mx",
+        pr_market: "mex",
+        pr_zone: "zone-1",
+        pr_zone_code: "mx-mex-zone-1",
+        zipcode: 53598,
+        location: "Estado de México"
+    }, 
+    "Puebla" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "PBC",
+            "City": "Puebla",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 72000,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "pue",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 72000,
+        location: "Puebla"
+    },
+    "Jalisco" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "GDL",
+            "City": "Jalisco",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 44100,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "gdl",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 44100,
+        location: "Jalisco"
+    },
+    "Nuevo León" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "MTY",
+            "City": "Nuevo Leon",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 64600,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "mty",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 64600,
+        location: "Nuevo León"
+    },
+    "Toluca" : {
+        operating_city: {
+            "Country": "MX",
+            "State": "MEX",
+            "City": "Toluca",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 50000,
+            "PR Zone Code": "mx-mex-zone-1"
+        },
+        pr_country: "mx",
+        pr_market: "tol",
+        pr_zone: "zone-1",
+        pr_zone_code: "mx-mex-zone-1",
+        zipcode: 50000,
+        location: "Toluca"
+    },
+    "Querétaro": {
+        operating_city: {
+            "Country": "MX",
+            "State": "QRO",
+            "City": "Queretaro",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 76000,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "qro",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 76000,
+        location: "Querétaro"
+    },
+    "Guanajuato": {
+        operating_city: {
+            "Country": "MX",
+            "State": "Guanajuato",
+            "City": "León",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 37000,
+            "PR Zone Code": "mx-mex-zone-0"
+        },
+        pr_country: "mx",
+        pr_market: "gto",
+        pr_zone: "zone-0",
+        pr_zone_code: "mx-mex-zone-0",
+        zipcode: 37000,
+        location: "Guanajuato"
+    },
+    "Hidalgo": {
+        operating_city: {
+            "Country": "MX",
+            "State": "HG",
+            "City": "Pachucha",
+            "Municipality": "",
+            "Neighborhood": "",
+            "Street Name": "",
+            "Landmark": "",
+            "Zipcode": 78557,
+            "PR Zone Code": "mx-pch-zone-1"
+        },
+        pr_country: "mx",
+        pr_market: "pch",
+        pr_zone: "zone-1",
+        pr_zone_code: "mx-pch-zone-1",
+        zipcode: 78557,
+        location: "Hidalgo"
+    }
+}
+
+exports.algoliaIndex = {
+    prospect: {
+        qa: 'qa_prospect_algo',
+        staging: 'staging_prospect_algo',
+        production: 'prod_prospect_algo',
+    },
+    qualified_lead: {
+        qa: 'qa_driver_lead_algo',
+        staging: 'staging_driver_lead_algo',
+        production: 'prod_driver_lead_algo',
+    }
+};
+
+exports.algoliaClientKey = {
+    qa: '40c4ae9f8daf8ba3a451873fd698d9c9',
+    staging: '091bdc19d7935d8236f4115e5f03b20f',
+    production: 'cd54e715aa4c14ceffcbf7c399cbbd23',
+};
 //# sourceMappingURL=constants.js.map
