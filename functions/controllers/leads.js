@@ -35,7 +35,7 @@ exports.postProspect = async (req, res, next) => {
         truora_flow_name,
         referred_by_name,
         referred_by_phone,
-        created_by,
+        created_by = "user",
         user_language
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -57,7 +57,7 @@ exports.postProspect = async (req, res, next) => {
                 update_datetime: new Date(),
                 user_language: user_language || "es",
                 // is_truora: true,
-                created_by: created_by || 'truora',
+                created_by: created_by,
                 truora_flow_id: truora_flow_id || null,
                 truora_flow_name: truora_flow_name || null,
                 last_status_update: new Date(),
@@ -71,6 +71,7 @@ exports.postProspect = async (req, res, next) => {
             );
             const addRecord = await addFirestoreRecord(docPath, prospectData);
             if (addRecord && addRecord.status === 200) {
+                addleadLog(prospectData);
                 res.status(200).json({
                     message: "added the truora data",
                     status: prospectData.status,
@@ -90,7 +91,7 @@ exports.postProspect = async (req, res, next) => {
         // const prospectID = leadSnapshot.docs[0].id;
         const { prospectID, prospectData } = getLeadFromSnapshot(leadSnapshot);
         const docPath = leadDocPath.replace(":prospect_uuid", prospectID);
-        if(created_by && created_by === 'admin') {
+        if (created_by && created_by === 'admin') {
             res.status(200).json({
                 message: "prospect already present",
                 status: prospectData.status,
@@ -102,13 +103,15 @@ exports.postProspect = async (req, res, next) => {
                 update_datetime: new Date(),
                 truora_flow_name: truora_flow_name,
                 truora_flow_id: truora_flow_id,
-                created_by: created_by || 'truora',
+                created_by: created_by || 'user',
                 last_status_update: new Date(),
             };
             if (prospectData.status === "rejected") {
                 data.status = "prospect";
                 const updateRecord = await updateFirestoreRecord(docPath, data);
                 if (updateRecord && updateRecord.status === 200) {
+                    const pData = {...prospectData, status: "prospect", created_by: created_by};
+                    addleadLog(pData);
                     res.status(200).json({
                         message:
                             "prospect already present with update from rejected to prospect status in firestore",
@@ -154,11 +157,12 @@ exports.putProspect = async (req, res, next) => {
         meeting_type,
         referred_by_name,
         referred_by_phone,
+        created_by = 'user'
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = [];
-    
-    if(vehicles) {
+
+    if (vehicles) {
         vehicleCodes = vehicles.split(',');
     }
 
@@ -216,6 +220,10 @@ exports.putProspect = async (req, res, next) => {
         }
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
+            if(status && status !== prospectData.status) {
+                const pData = {...prospectData, status: status, created_by: created_by};
+                addleadLog(pData);
+            }
             res.status(200).json({ message: "updated the truora data" });
         } else {
             res.status(500).json(updateRecord.error);
@@ -224,7 +232,7 @@ exports.putProspect = async (req, res, next) => {
 };
 
 exports.putProspectStatus = async (req, res, next) => {
-    const { status, phone, is_fleet, rejection_reason } = req.body;
+    const { status, phone, is_fleet, rejection_reason, created_by = 'user' } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     const data = {
         status: status,
@@ -253,10 +261,14 @@ exports.putProspectStatus = async (req, res, next) => {
         value: phoneNumber,
     });
     if (snapshot.size > 0) {
-        const { prospectID } = getLeadFromSnapshot(snapshot);
+        const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const docPath = leadDocPath.replace(":prospect_uuid", prospectID);
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
+            if(status && status !== prospectData.status) {
+                const pData = {...prospectData, status: status, created_by: created_by};
+                addleadLog(pData);
+            }
             res.status(200).json({ message: "updated the truora data" });
         } else {
             res.status(500).json(updateRecord.error);
@@ -265,7 +277,7 @@ exports.putProspectStatus = async (req, res, next) => {
 };
 
 exports.postProspectQualify = async (req, res, next) => {
-    const { status, phone } = req.body;
+    const { status, phone, created_by = "user" } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     const data = {
         status: status,
@@ -292,12 +304,26 @@ exports.postProspectQualify = async (req, res, next) => {
                     res.status(500).json(addRecord.error);
                 }
                 const log1Path = `driver_lead/${leadID}/change_logs/${new Date().toISOString()}`;
-                addLog(log1Path, "Show Interest");
+                const log1Data = {
+                    currentStatus: "Show Interest",
+                    logType: "qualified-lead",
+                    created_by: created_by
+                }
+                addLog(log1Path, log1Data);
                 const log2Path = `driver_lead/${leadID}/change_logs/${new Date().toISOString()}`;
                 const log2currentStatus = prospectData.lead_status.split("_").map((t) => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()).join(" ");
-                addLog(log2Path, log2currentStatus)
+                const log2Data = {
+                    currentStatus: log2currentStatus,
+                    logType: "qualified-lead",
+                    created_by: created_by
+                }
+                addLog(log2Path, log2Data)
                 const updateLeadRecord = await updateFirestoreRecord(leadDocumentPath, data);
                 if (updateLeadRecord && updateLeadRecord.status === 200) {
+                    if(status && status !== prospectData.status) {
+                        const pData = {...prospectData, status: status, created_by: created_by};
+                        addleadLog(pData);
+                    }
                     res.status(200).json({ message: `added driver lead ${leadID} and updated the truora profile ${prospectID}`, });
                 } else {
                     res.status(500).json(updateLeadRecord.error);
@@ -329,14 +355,39 @@ const checkIfLeadAlreadyPresentAsQualified = (phoneNumber, phone_country_code) =
     return getFirestoreRecord(qulifiedleadCollectionPath, query);
 }
 
-const addLog = (logDocPath, currentStatus) => {
-    const logVal = {
-        previousStatus: "",
-        currentStatus: currentStatus,
-        updatedDateTime: new Date(),
-        updatedBy: "Truora",
-        action: "admin",
-        notes: "",
-    };
+const addleadLog = (prospectData) => {
+    const docPath = leadDocPath.replace(
+        ":prospect_uuid",
+        prospectData.prospect_uuid
+    );
+    const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
+    const logData = {
+        ...prospectData,
+        logType: "lead"
+    }
+    addLog(logPath, logData)
+}
+
+const addLog = (logDocPath, data) => {
+    let logVal = null;
+    if (data.logType === 'lead') {
+        logVal = {
+            status: data.status,
+            updatedDateTime: new Date(),
+            truora_flow_id: data.truora_flow_id,
+            truora_flow_name: data.truora_flow_name,
+            action_by: data.created_by,
+            name: data.full_name,
+        };
+    } else {
+        logVal = {
+            previousStatus: "",
+            currentStatus: data.currentStatus,
+            updatedDateTime: new Date(),
+            updatedBy: data.created_by,
+            action: data.created_by,
+            notes: "",
+        };
+    }
     addFirestoreRecord(logDocPath, logVal);
 }
