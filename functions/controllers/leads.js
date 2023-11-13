@@ -3,6 +3,7 @@ const moment = require("moment");
 
 const helper_functions = require("../utils/helper.functions");
 const { getFirestoreRecord, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
+const { sourceData } = require("../utils/constants");
 
 const leadCollectionPath = "driver_lead/leads/prospects";
 const leadDocPath = "driver_lead/leads/prospects/:prospect_uuid";
@@ -36,9 +37,11 @@ exports.postProspect = async (req, res, next) => {
         referred_by_name,
         referred_by_phone,
         created_by = "user",
-        user_language
+        user_language,
+        source
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
+    let sourceName = sourceData.find(s => s.code === source).code || 'facebook';
     const leadSnapshot = await getFirestoreRecord(leadCollectionPath, {
         key: "phone",
         operator: "==",
@@ -63,7 +66,8 @@ exports.postProspect = async (req, res, next) => {
                 last_status_update: new Date(),
                 application_id: `PRD${Math.random().toString().substring(2, 9)}`,
                 referred_by_name: referred_by_name || null,
-                referred_by_phone: referred_by_phone || null
+                referred_by_phone: referred_by_phone || null,
+                source: sourceName
             };
             const docPath = leadDocPath.replace(
                 ":prospect_uuid",
