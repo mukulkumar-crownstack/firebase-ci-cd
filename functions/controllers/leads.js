@@ -52,6 +52,7 @@ exports.postProspect = async (req, res, next) => {
         if (qualifiedLeadSnapshot.size === 0) {
             const prospectData = {
                 full_name: full_name,
+                company_name: full_name,
                 phone: phoneNumber,
                 prospect_uuid: helper_functions.generateUUID(),
                 phone_country_code: "mx",
