@@ -162,6 +162,7 @@ exports.putProspect = async (req, res, next) => {
         meeting_type,
         referred_by_name,
         referred_by_phone,
+        source,
         created_by = 'user'
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -197,10 +198,9 @@ exports.putProspect = async (req, res, next) => {
             status: status || prospectData.status,
             meeting_type: meeting_type || prospectData.meeting_type || null,
             vehicle_year: vehicle_year || prospectData.vehicle_year || null,
-            referred_by_name:
-                referred_by_name || prospectData.referred_by_name || null,
-            referred_by_phone:
-                referred_by_phone || prospectData.referred_by_phone || null,
+            referred_by_name: referred_by_name || prospectData.referred_by_name || null,
+            referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
+            source: source || prospectData.source
         };
         if (zoneDetails) {
             data = { ...data, ...zoneDetails };
