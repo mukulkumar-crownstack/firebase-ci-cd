@@ -470,8 +470,8 @@ exports.sourceData = [
         code: "facebook"
     },
     {
-        name: "TickTok",
-        code: "ticktok"
+        name: "TikTok",
+        code: "tiktok"
     }
 ]
 //# sourceMappingURL=constants.js.map
