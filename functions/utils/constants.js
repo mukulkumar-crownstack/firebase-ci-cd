@@ -468,6 +468,10 @@ exports.sourceData = [
     {
         name: "Facebook",
         code: "facebook"
+    },
+    {
+        name: "TickTok",
+        code: "ticktok"
     }
 ]
 //# sourceMappingURL=constants.js.map
