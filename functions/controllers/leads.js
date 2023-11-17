@@ -301,6 +301,7 @@ exports.postProspectQualify = async (req, res, next) => {
         if (prospectData) {
             const snapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
             if (snapshot.size === 0) {
+                prospectData['driver_uuid'] = prospectData.prospect_uuid;
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
