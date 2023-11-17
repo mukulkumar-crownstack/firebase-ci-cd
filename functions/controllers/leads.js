@@ -223,6 +223,10 @@ exports.putProspect = async (req, res, next) => {
         if (status && status !== prospectData.status) {
             data["last_status_update"] = new Date();
         }
+        if(prospectData.source === 'referidos' && source && source !== prospectData.source) {
+            data.referred_by_name = '';
+            data.referred_by_phone = '';
+        }
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
             if(status && status !== prospectData.status) {
