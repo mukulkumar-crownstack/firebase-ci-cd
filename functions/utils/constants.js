@@ -451,4 +451,27 @@ exports.algoliaClientKey = {
     staging: '091bdc19d7935d8236f4115e5f03b20f',
     production: 'cd54e715aa4c14ceffcbf7c399cbbd23',
 };
+
+exports.sourceData = [
+    {
+        name: "Referidos",
+        code: "referidos"
+    },
+    {
+        name: "Google",
+        code: "google"
+    },
+    {
+        name: "LinkedIn",
+        code: "linkedin"
+    },
+    {
+        name: "Facebook",
+        code: "facebook"
+    },
+    {
+        name: "TikTok",
+        code: "tiktok"
+    }
+]
 //# sourceMappingURL=constants.js.map

@@ -4,6 +4,20 @@ const { Timestamp } = require("firebase-admin/firestore");
 
 // const { algoliaProspectIndex } = require("../models/algolia.model");
 
+exports.getMigrationsFirestoreData = async (req, res, next) => {
+    const countryCode = req.params.countryCode;
+    admin.firestore().doc('driver_lead_metadata/'+countryCode).get().then((documentSnapshot) => {
+        res.status(200).json(documentSnapshot.data());
+    });
+}
+
+exports.postMigrationsFirestoreData = async (req, res, next) => {
+    const {data, country_code} = req.body;
+    admin.firestore().doc('driver_lead_metadata/'+country_code).update(data).then((documentSnapshot) => {
+        res.status(200).json({message: "updated"});
+    });
+}
+
 exports.postMigrationsData = async (req, res, next) => {
     console.log("start");
     // const sDate = new Date('2023-08-01');
