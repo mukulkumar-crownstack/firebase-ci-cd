@@ -79,24 +79,24 @@ exports.Slack_URL = {
     // flotilleros :'https://hooks.slack.com/services/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',
     // persona_moral :'https://hooks.slack.com/services/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',
     dev: {
-        us: 'https://hooks.slack.com/services/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',
-        mx: 'https://hooks.slack.com/services/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',
-        in: 'https://hooks.slack.com/services/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',
+        us: 'https://hooks.slack.com/services/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',
+        mx: 'https://hooks.slack.com/services/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',
+        in: 'https://hooks.slack.com/services/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',
     },
     qa: {
-        us: 'https://hooks.slack.com/services/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',
-        mx: 'https://hooks.slack.com/services/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',
-        in: 'https://hooks.slack.com/services/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',
+        us: 'https://hooks.slack.com/services/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',
+        mx: 'https://hooks.slack.com/services/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',
+        in: 'https://hooks.slack.com/services/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',
     },
     staging: {
-        us: 'https://hooks.slack.com/services/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',
-        mx: 'https://hooks.slack.com/services/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',
-        in: 'https://hooks.slack.com/services/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',
+        us: 'https://hooks.slack.com/services/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',
+        mx: 'https://hooks.slack.com/services/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',
+        in: 'https://hooks.slack.com/services/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',
     },
     production: {
-        us: 'https://hooks.slack.com/services/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',
-        mx: 'https://hooks.slack.com/services/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',
-        in: 'https://hooks.slack.com/services/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',
+        us: 'https://hooks.slack.com/services/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',
+        mx: 'https://hooks.slack.com/services/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',
+        in: 'https://hooks.slack.com/services/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',
     }
 };
 exports.YARDSTIK = {
