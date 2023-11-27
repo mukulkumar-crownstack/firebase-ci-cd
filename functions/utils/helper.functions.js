@@ -72,10 +72,11 @@ const getPartrunnerBaseURL = (panelName) => {
 };
 exports.getPartrunnerBaseURL = getPartrunnerBaseURL;
 
-exports.geENVName = (() => {
+const geENVName = (() => {
     const projectId = admin.instanceId().app.options.projectId;
     return constants.firebaseProjectID[projectId];
 });
+exports.geENVName = geENVName;
 
 const getDriverAvailablity = (availablity, countryCode) => {
     const label = countryCode === 'mx' ? 'label_es' : 'label_en';
