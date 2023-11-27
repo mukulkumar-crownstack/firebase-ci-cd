@@ -19,13 +19,14 @@ exports.getVehicleType = ((type, country) => {
 });
 
 exports.sendSlackNotification = ((text, countryCode) => {
-    const env = exports.geENVName();
+    const env = geENVName();
     const slackHookUrl = constants.Slack_URL[env][countryCode];
     const options = {
         headers: {
             "Content-Type": "application/json"
         },
     };
+    console.log('sendSlackNotification Url......', env , slackHookUrl);
     return axios.post(slackHookUrl, JSON.stringify({ text: text }), options).then(response => {
         console.log("Successful");
     })
