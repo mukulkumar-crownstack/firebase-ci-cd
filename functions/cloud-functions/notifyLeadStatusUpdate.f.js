@@ -43,15 +43,15 @@ exports.notifyLeadStatusUpdate_f = async (change, context) => {
     newValue.lead_status !== previousValue.lead_status ||
     newValue.application_status !== previousValue.application_status
   ) {
-    if (leadStatus === enums.LeadStatus.APPLIED) {
-      smsText = `${translation[
-        "Thank you for applying with Partrunner. Your application ID is :applicationID .\n\nIf you want to continue or make changes, click here"
-      ].replace(
-        ":applicationID",
-        applicationID
-      )} ${helper_functions.getPartrunnerBaseURL("driver")}/${translation.language
-        }/login`;
-    }
+    // if (leadStatus === enums.LeadStatus.APPLIED) {
+    //   smsText = `${translation[
+    //     "Thank you for applying with Partrunner. Your application ID is :applicationID .\n\nIf you want to continue or make changes, click here"
+    //   ].replace(
+    //     ":applicationID",
+    //     applicationID
+    //   )} ${helper_functions.getPartrunnerBaseURL("driver")}/${translation.language
+    //     }/login`;
+    // }
     if (applicationStatus === enums.ApplicationStatus.UNDER_REVIEW) {
       // smsText = `${translation["Your application to drive with PartRunner is under review. We will contact you again to train you and answer any questions soon."]}`;
       slackText = `
@@ -137,19 +137,19 @@ exports.notifyLeadStatusUpdate_f = async (change, context) => {
           ${translation.Availability}: ${available}
         `;
       }
-      smsText = `${translation["Welcome to the PartRunner Team! You have been approved to drive with us. An email will be sent shortly with instructions on how to start using the Driver App and start earning extra money. Stay tuned!"]}`;
+      // smsText = `${translation["Welcome to the PartRunner Team! You have been approved to drive with us. An email will be sent shortly with instructions on how to start using the Driver App and start earning extra money. Stay tuned!"]}`;
     }
-    if (smsText) {
-      helper_functions.sendSms(sendSmsTo, smsText, smsFrom, (twilioRes) => {
-        if (twilioRes.status === "success") {
-          console.log("success");
-          res.status(200).json({ msg: twilioRes });
-        } else {
-          console.log("error", err);
-          res.status(500).json({ err: err });
-        }
-      });
-    }
+    // if (smsText) {
+    //   helper_functions.sendSms(sendSmsTo, smsText, smsFrom, (twilioRes) => {
+    //     if (twilioRes.status === "success") {
+    //       console.log("success");
+    //       res.status(200).json({ msg: twilioRes });
+    //     } else {
+    //       console.log("error", err);
+    //       res.status(500).json({ err: err });
+    //     }
+    //   });
+    // }
     if (slackText) {
       helper_functions.sendSlackNotification(
         slackText,

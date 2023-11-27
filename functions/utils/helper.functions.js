@@ -19,13 +19,14 @@ exports.getVehicleType = ((type, country) => {
 });
 
 exports.sendSlackNotification = ((text, countryCode) => {
-    const env = exports.geENVName();
+    const env = geENVName();
     const slackHookUrl = constants.Slack_URL[env][countryCode];
     const options = {
         headers: {
             "Content-Type": "application/json"
         },
     };
+    console.log('sendSlackNotification Url......', env , slackHookUrl);
     return axios.post(slackHookUrl, JSON.stringify({ text: text }), options).then(response => {
         console.log("Successful");
     })
@@ -71,10 +72,11 @@ const getPartrunnerBaseURL = (panelName) => {
 };
 exports.getPartrunnerBaseURL = getPartrunnerBaseURL;
 
-exports.geENVName = (() => {
+const geENVName = (() => {
     const projectId = admin.instanceId().app.options.projectId;
     return constants.firebaseProjectID[projectId];
 });
+exports.geENVName = geENVName;
 
 const getDriverAvailablity = (availablity, countryCode) => {
     const label = countryCode === 'mx' ? 'label_es' : 'label_en';
