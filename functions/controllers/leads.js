@@ -3,7 +3,7 @@ const moment = require("moment");
 
 const helper_functions = require("../utils/helper.functions");
 const { getFirestoreRecord, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
-const { sourceData } = require("../utils/constants");
+const { sourceData, interviewers } = require("../utils/constants");
 
 const leadCollectionPath = "driver_lead/leads/prospects";
 const leadDocPath = "driver_lead/leads/prospects/:prospect_uuid";
@@ -38,7 +38,8 @@ exports.postProspect = async (req, res, next) => {
         referred_by_phone,
         created_by = "user",
         user_language,
-        source
+        source, 
+        pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let sourceName = sourceData.find(s => s.code === source).code || 'facebook';
@@ -70,6 +71,11 @@ exports.postProspect = async (req, res, next) => {
                 referred_by_phone: referred_by_phone || null,
                 source: sourceName
             };
+            if (created_by && created_by !== 'admin') {
+                prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 51);
+            } else if(pr_user_id) {
+                prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === pr_user_id);
+            }
             const docPath = leadDocPath.replace(
                 ":prospect_uuid",
                 prospectData.prospect_uuid
@@ -308,6 +314,9 @@ exports.postProspectQualify = async (req, res, next) => {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
+                if (created_by && created_by !== 'admin') {
+                    prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 50);
+                }
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
                 if (addRecord && addRecord.status === 200) {
                 } else {
