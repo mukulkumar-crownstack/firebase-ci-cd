@@ -235,7 +235,7 @@ exports.putProspect = async (req, res, next) => {
             data.referred_by_phone = '';
         }
         if (created_by && created_by === 'admin' && pr_user_id) {
-            prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === pr_user_id);
+            data['interviewer_details'] = interviewers.find(i => i.pr_user_id === pr_user_id);
         } 
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
