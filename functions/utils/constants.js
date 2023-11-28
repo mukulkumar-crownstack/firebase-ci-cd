@@ -474,4 +474,19 @@ exports.sourceData = [
         code: "tiktok"
     }
 ]
+
+exports.interviewers = [
+    {
+        designation: 'Driver Hiring Specialist',
+        email: 'a.pastrana@partrunner.com',
+        name: 'Ana',
+        pr_user_id: 51
+    },
+    {
+        designation: 'Driver Hiring Specialist',
+        email: 'n.pizano@partrunner.com',
+        name: 'Nohemi Pizano',
+        pr_user_id: 50
+    },
+]
 //# sourceMappingURL=constants.js.map
