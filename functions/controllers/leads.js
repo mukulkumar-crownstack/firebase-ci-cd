@@ -169,7 +169,8 @@ exports.putProspect = async (req, res, next) => {
         referred_by_name,
         referred_by_phone,
         source,
-        created_by = 'user'
+        created_by = 'user',
+        pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = [];
@@ -233,6 +234,9 @@ exports.putProspect = async (req, res, next) => {
             data.referred_by_name = '';
             data.referred_by_phone = '';
         }
+        if (created_by && created_by === 'admin' && pr_user_id) {
+            prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === pr_user_id);
+        } 
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
             if(status && status !== prospectData.status) {
