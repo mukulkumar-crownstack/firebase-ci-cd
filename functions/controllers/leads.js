@@ -159,6 +159,7 @@ exports.putProspect = async (req, res, next) => {
     const {
         full_name,
         vehicles,
+        vehicle_subcategory,
         email,
         session_time,
         location,
@@ -174,9 +175,13 @@ exports.putProspect = async (req, res, next) => {
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = [];
+    let vehicleSubcategoryCode = [];
 
     if (vehicles) {
         vehicleCodes = vehicles.split(',');
+    }
+    if(vehicle_subcategory) {
+        vehicleSubcategoryCode = vehicle_subcategory.split(',')
     }
 
     const snapshot = await getFirestoreRecord(leadCollectionPath, {
@@ -193,8 +198,8 @@ exports.putProspect = async (req, res, next) => {
         }
         let data = {
             full_name: full_name || prospectData.full_name,
-            vehicle_type_codes:
-                (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
+            vehicle_type_codes: (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
+            vehicle_subcategory_codes: (vehicle_subcategory && vehicleSubcategoryCode) || prospectData.vehicle_subcategory_codes || null,
             email: email || "",
             session_time: null,
             session_timestamp: null,
