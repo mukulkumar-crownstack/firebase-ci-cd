@@ -324,7 +324,9 @@ exports.postProspectQualify = async (req, res, next) => {
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
                 if (created_by && created_by !== 'admin') {
-                    prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 50);
+                    const nohemi = interviewers.find(i => i.pr_user_id === 50);
+                    prospectData['interviewer_details'] = nohemi;
+                    data['interviewer_details'] = nohemi;
                 }
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
                 if (addRecord && addRecord.status === 200) {
