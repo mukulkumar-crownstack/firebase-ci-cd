@@ -3,6 +3,7 @@ on:
   workflow_dispatch:
   push:
     branches:
+      - dev
       - qa
       - staging
       - main
@@ -27,6 +28,12 @@ jobs:
         run: npm ci
         working-directory: functions
       # SET ENV AND PROJECT IN FIREBASE
+      - name: Create DEV SA key
+        if: endsWith(github.ref, '/dev')
+        run: |
+          echo '${{ secrets.FIREBASE_SERVICE_ACCOUNT_DEV}}' > $HOME/gcloud.json
+          export GOOGLE_APPLICATION_CREDENTIALS=$HOME/gcloud.json
+          npx firebase-tools use partrunner-dev-cb924
       - name: Create QA SA key
         if: endsWith(github.ref, '/qa')
         run: |

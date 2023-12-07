@@ -474,4 +474,20 @@ exports.sourceData = [
         code: "tiktok"
     }
 ]
+
+exports.interviewers = [
+    {
+        designation: 'Driver Hiring Specialist',
+        email: 'a.pastrana@partrunner.com',
+        name: 'Ana',
+        pr_user_id: 51,
+        profile_picture: 'https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/ana_thumb.jpg'
+    },
+    {
+        designation: 'Driver Hiring Specialist',
+        email: 'n.pizano@partrunner.com',
+        name: 'Nohemi Pizano',
+        pr_user_id: 'https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/nohemi_thumb.jpg'
+    },
+]
 //# sourceMappingURL=constants.js.map
