@@ -487,7 +487,8 @@ exports.interviewers = [
         designation: 'Driver Hiring Specialist',
         email: 'n.pizano@partrunner.com',
         name: 'Nohemi Pizano',
-        pr_user_id: 'https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/nohemi_thumb.jpg'
+        pr_user_id: 50,
+        profile_picture: 'https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/nohemi_thumb.jpg'
     },
 ]
 //# sourceMappingURL=constants.js.map
