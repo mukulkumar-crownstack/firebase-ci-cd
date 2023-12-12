@@ -34,7 +34,8 @@ exports.postQualifiedDriver = async (req, res, next) => {
             created_by: created_by,
             dispatch_company_uuid: dispatch_company_uuid,
             dispatch_driver_uuid: dispatchDriverUUID,
-            application_type: 'driver'
+            application_type: 'driver',
+            how_many_drivers: 1
         };
         prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
         const dispatchDriverDOCID = `driver_${prospectData.phone_country_code}_${dispatchDriverUUID}_${dispatch_company_uuid}`;
@@ -73,7 +74,7 @@ exports.putQualifiedDriver = async (req, res, next) => {
     if (snapshot.size > 0) {
         const data = { ...req.body, update_datetime: new Date() };
         const { docID, docData } = getDataFromSnapshot(snapshot);
-        if (data.phone !== docData.phone) {
+        if (data.phone && data.phone !== docData.phone) {
             const qualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(docData.phone, 'mx');
             if (qualifiedLeadSnapshot.size === 0) {
                 const isUpdated = await updateRecord(docID, data);
