@@ -114,11 +114,15 @@ exports.putQualifiedDriverStatus = async (req, res, next) => {
             const isUpdated = await updateRecord(docID, data);
             if (isUpdated.status === 200) {
                 const logPath = `${qulifiedleadDocPath.replace(":doc_uuid", docID)}/change_logs/${new Date().toISOString()}`;
-                addLog(logPath, prospectData);
+                docData['previousStatus'] = docData.application_status;
+                docData['application_status'] = data.application_status;
+                addLog(logPath, docData);
                 res.status(200).json({ message: "Updated dispatch driver status" });
             } else {
                 res.status(500).json(isUpdated.error);
             }
+        } else {
+            res.status(500).json({ message: "no change in status provided" });
         }
     }
 }
