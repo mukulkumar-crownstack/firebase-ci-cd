@@ -1,6 +1,6 @@
 const admin = require("firebase-admin");
 const { getFirestoreRecord, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
-const { ApplicationStatus } = require("../utils/enums");
+const { ApplicationStatus, Driver_Type_Code } = require("../utils/enums");
 const { generateUUID } = require("../utils/helper.functions");
 const { interviewers } = require("../utils/constants");
 const qulifiedleadCollectionPath = "driver_lead";
@@ -107,6 +107,104 @@ exports.putQualifiedDriverStatus = async (req, res, next) => {
         key: "dispatch_driver_uuid",
         operator: "==",
         value: dispatchDriverUUID,
+    });
+    if (snapshot.size > 0) {
+        const data = { ...req.body, update_datetime: new Date() };
+        const { docID, docData } = getDataFromSnapshot(snapshot);
+        if (data.application_status !== docData.application_status) {
+            const isUpdated = await updateRecord(docID, data);
+            if (isUpdated.status === 200) {
+                const logPath = `${qulifiedleadDocPath.replace(":doc_uuid", docID)}/change_logs/${new Date().toISOString()}`;
+                docData['previousStatus'] = docData.application_status;
+                docData['application_status'] = data.application_status;
+                addLog(logPath, docData);
+                res.status(200).json({ message: "Updated vehicle status" });
+            } else {
+                res.status(500).json(isUpdated.error);
+            }
+        } else {
+            res.status(500).json({ message: "no change in status provided" });
+        }
+    }
+}
+
+exports.postQualifiedVehicle = async (req, res, next) => {
+    const {
+        created_by,
+        pr_user_id,
+        full_name,
+        dispatch_company_uuid,
+        dispatch_company_id,
+        driver_uuid,
+        driver_id,
+        driver_type,
+        vehicle_type,
+        vehicle_type_id
+    } = req.body;
+        const vehicleUUID = generateUUID();
+        const vehicleData = {
+            full_name: full_name,
+            phone_country_code: "mx",
+            application_status: ApplicationStatus.IN_PROGRESS,
+            created_datetime: new Date(),
+            update_datetime: new Date(),
+            created_by: created_by,
+            dispatch_company_uuid: dispatch_company_uuid,
+            dispatch_company_id: dispatch_company_id,
+            driver_user_uuid: driver_uuid,
+            driver_id: driver_id,
+            vehicle_uuid: vehicleUUID,
+            application_type: 'vehicle',
+            how_many_vehicles: 1,
+            driver_type_code: driver_type == 1 ? Driver_Type_Code.independent_driver : Driver_Type_Code.flotilleros,
+            vehicle_type: vehicle_type,
+            vehicle_type_id: vehicle_type_id,
+            driver_user_type_id: driver_type
+        };
+        vehicleData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+        const dispatchDriverDOCID = `vehicle_${vehicleData.phone_country_code}_${vehicleUUID}_${dispatch_company_uuid ? dispatch_company_uuid: driver_uuid}`;
+        const docPath = qulifiedleadDocPath.replace(
+            ":doc_uuid",
+            dispatchDriverDOCID
+        );
+        const addRecord = await addFirestoreRecord(docPath, vehicleData);
+        if (addRecord && addRecord.status === 200) {
+            const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
+            addLog(logPath, vehicleData);
+            res.status(200).json({
+                message: "added vehicle driver",
+                status: vehicleData.status
+            });
+        } else {
+            res.status(500).json(addRecord.error);
+        }
+};
+
+exports.putQualifiedVehicle = async (req, res, next) => {
+    const vehicleUUID = req.params.uuid;
+    const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
+        key: "vehicle_uuid",
+        operator: "==",
+        value: vehicleUUID,
+    });
+    if (snapshot.size > 0) {
+        const data = { ...req.body, update_datetime: new Date() };
+        const { docID } = getDataFromSnapshot(snapshot);
+        const isUpdated = await updateRecord(docID, data);
+        if (isUpdated.status === 200) {
+            res.status(200).json({ message: "Updated vehicle details" });
+        } else {
+            res.status(500).json(isUpdated.error);
+        }
+    }
+}
+
+exports.putQualifiedVehicleStatus = async (req, res, next) => {
+    const vehicleUUID = req.params.uuid;
+    const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
+        key: "vehicle_uuid",
+        operator: "==",
+        value: vehicleUUID,
     });
     if (snapshot.size > 0) {
         const data = { ...req.body, update_datetime: new Date() };
