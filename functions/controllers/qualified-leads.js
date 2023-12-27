@@ -156,7 +156,7 @@ exports.postQualifiedVehicle = async (req, res, next) => {
             vehicle_uuid: vehicleUUID,
             application_type: 'vehicle',
             how_many_vehicles: 1,
-            driver_type_code: driver_type == 1 ? Driver_Type_Code.independent_driver : Driver_Type_Code.flotilleros,
+            driver_type_code: driver_type == 1 ? Driver_Type_Code.cliente_independiente : Driver_Type_Code.flotilleros,
             vehicle_type: vehicle_type,
             vehicle_type_id: vehicle_type_id,
             driver_user_type_id: driver_type
@@ -170,6 +170,20 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         const addRecord = await addFirestoreRecord(docPath, vehicleData);
         if (addRecord && addRecord.status === 200) {
             const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
+            const vehicleDocPath = `${docPath}/vehicle_info/${vehicleUUID}`;
+            const data = {
+                code: vehicleUUID,
+                license_plate: null,
+                manufacturer: null,
+                model: null,
+                name: 'Vehicle 1 Info',
+                vehicle_back_proof: null,
+                vehicle_left_side_proof: null,
+                vehicle_type: vehicle_type,
+                year: null,
+                images: []
+            }
+            addFirestoreRecord(vehicleDocPath, data);
             addLog(logPath, vehicleData);
             res.status(200).json({
                 message: "added vehicle driver",
