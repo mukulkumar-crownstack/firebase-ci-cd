@@ -42,6 +42,7 @@ exports.postProspect = async (req, res, next) => {
         pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
+        console.log(phoneNumber,phone);
     let sourceName = sourceData.find(s => s.code === source).code || 'facebook';
     const leadSnapshot = await getFirestoreRecord(leadCollectionPath, {
         key: "phone",
