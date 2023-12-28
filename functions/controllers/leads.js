@@ -140,11 +140,23 @@ exports.postProspect = async (req, res, next) => {
                 });
             } else {
                 const updateRecord = await updateFirestoreRecord(docPath, data);
+                let blockStatus = '';
+                if(prospectData.location) {
+                    blockStatus = 'prelead_with_location';
+                }
+                if(prospectData.vehicle_type_codes) {
+                    blockStatus = 'prelead_with_vehicle_category';
+                }
+                if(prospectData.vehicle_subcategory_codes) {
+                    blockStatus = 'prelead_with_vehicle_type';
+                }
+                
                 if (updateRecord && updateRecord.status === 200) {
                     res.status(200).json({
                         message:
                             "prospect already present with update from rejected to prospect status in firestore",
                         status: prospectData.status,
+                        blockStatus: blockStatus,
                         is_avalabile: false
                     });
                 } else {
