@@ -18,7 +18,8 @@ exports.postQualifiedDriver = async (req, res, next) => {
         created_by,
         pr_user_id,
         dispatch_company_uuid,
-        company_name
+        company_name,
+        updated_by
     } = req.body;
     const qualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(phone, 'mx');
     if (qualifiedLeadSnapshot.size === 0) {
@@ -46,6 +47,7 @@ exports.postQualifiedDriver = async (req, res, next) => {
         const addRecord = await addFirestoreRecord(docPath, prospectData);
         if (addRecord && addRecord.status === 200) {
             const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
+            prospectData['updated_by'] = updated_by;
             addLog(logPath, prospectData);
             res.status(200).json({
                 message: "added dispatch driver",
@@ -117,6 +119,7 @@ exports.putQualifiedDriverStatus = async (req, res, next) => {
                 const logPath = `${qulifiedleadDocPath.replace(":doc_uuid", docID)}/change_logs/${new Date().toISOString()}`;
                 docData['previousStatus'] = docData.application_status;
                 docData['application_status'] = data.application_status;
+                docData['updated_by'] = data.updated_by;
                 addLog(logPath, docData);
                 res.status(200).json({ message: "Updated vehicle status" });
             } else {
@@ -139,7 +142,8 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         driver_id,
         driver_type,
         vehicle_type,
-        vehicle_type_id
+        vehicle_type_id,
+        updated_by
     } = req.body;
         const vehicleUUID = generateUUID();
         const vehicleData = {
@@ -169,6 +173,7 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         );
         const addRecord = await addFirestoreRecord(docPath, vehicleData);
         if (addRecord && addRecord.status === 200) {
+            vehicleData['updated_by'] = updated_by;
             const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
             const vehicleDocPath = `${docPath}/vehicle_info/${vehicleUUID}`;
             const data = {
@@ -203,9 +208,14 @@ exports.putQualifiedVehicle = async (req, res, next) => {
     });
     if (snapshot.size > 0) {
         const data = { ...req.body, update_datetime: new Date() };
-        const { docID } = getDataFromSnapshot(snapshot);
+        const { docID, docData } = getDataFromSnapshot(snapshot);
         const isUpdated = await updateRecord(docID, data);
         if (isUpdated.status === 200) {
+            const logPath = `${qulifiedleadDocPath.replace(":doc_uuid", docID)}/change_logs/${new Date().toISOString()}`;
+            docData['previousStatus'] = docData.application_status;
+            docData['application_status'] = data.application_status;
+            docData['updated_by'] = data.updated_by;
+            addLog(logPath, docData);
             res.status(200).json({ message: "Updated vehicle details" });
         } else {
             res.status(500).json(isUpdated.error);
@@ -229,6 +239,7 @@ exports.putQualifiedVehicleStatus = async (req, res, next) => {
                 const logPath = `${qulifiedleadDocPath.replace(":doc_uuid", docID)}/change_logs/${new Date().toISOString()}`;
                 docData['previousStatus'] = docData.application_status;
                 docData['application_status'] = data.application_status;
+                docData['updated_by'] = data.updated_by;
                 addLog(logPath, docData);
                 res.status(200).json({ message: "Updated dispatch driver status" });
             } else {
@@ -268,7 +279,8 @@ const addLog = (logDocPath, data) => {
         previousStatus: data.previousStatus || '',
         currentStatus: data.application_status,
         updatedDateTime: new Date(),
-        action: data.created_by
+        action: data.created_by,
+        updatedBy: data.updated_by
     };
     addFirestoreRecord(logDocPath, logVal);
 }
