@@ -117,7 +117,13 @@ exports.postProspect = async (req, res, next) => {
                 created_by: created_by || 'user',
                 last_status_update: new Date(),
             };
-            if (prospectData.status === "rejected") {
+            if (prospectData.status === "prospect") {
+                res.status(201).json({
+                    message: "prospect already present with prospect status",
+                    status: prospectData.status,
+                    is_avalabile: false
+                });
+            } else if (prospectData.status === "rejected") {
                 data.status = "prospect";
                 const updateRecord = await updateFirestoreRecord(docPath, data);
                 if (updateRecord && updateRecord.status === 200) {
@@ -138,8 +144,26 @@ exports.postProspect = async (req, res, next) => {
                     status: prospectData.status,
                     is_avalabile: false
                 });
+            } else if (prospectData.status === "lead") {
+                res.status(201).json({
+                    message: "prospect already present with lead status",
+                    status: prospectData.status,
+                    is_avalabile: false
+                });
             } else {
                 const updateRecord = await updateFirestoreRecord(docPath, data);
+                if(!prospectData.location) {
+                    prospectData.status = 'prelead_without_location';
+                }
+                if(prospectData.location) {
+                    prospectData.status = 'prelead_with_location';
+                }
+                if(prospectData.vehicle_type_codes) {
+                    prospectData.status = 'prelead_with_vehicle_category';
+                }
+                if(prospectData.vehicle_subcategory_codes) {
+                    prospectData.status = 'prelead_with_vehicle_type';
+                }
                 if (updateRecord && updateRecord.status === 200) {
                     res.status(200).json({
                         message:
