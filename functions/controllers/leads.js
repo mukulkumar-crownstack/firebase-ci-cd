@@ -3,7 +3,7 @@ const moment = require("moment");
 
 const helper_functions = require("../utils/helper.functions");
 const { getFirestoreRecord, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
-const { sourceData } = require("../utils/constants");
+const { sourceData, interviewers } = require("../utils/constants");
 
 const leadCollectionPath = "driver_lead/leads/prospects";
 const leadDocPath = "driver_lead/leads/prospects/:prospect_uuid";
@@ -38,7 +38,8 @@ exports.postProspect = async (req, res, next) => {
         referred_by_phone,
         created_by = "user",
         user_language,
-        source
+        source, 
+        pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let sourceName = sourceData.find(s => s.code === source).code || 'facebook';
@@ -70,6 +71,11 @@ exports.postProspect = async (req, res, next) => {
                 referred_by_phone: referred_by_phone || null,
                 source: sourceName
             };
+            if (created_by && created_by !== 'admin') {
+                prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 51);
+            } else if(pr_user_id) {
+                prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+            }
             const docPath = leadDocPath.replace(
                 ":prospect_uuid",
                 prospectData.prospect_uuid
@@ -111,7 +117,13 @@ exports.postProspect = async (req, res, next) => {
                 created_by: created_by || 'user',
                 last_status_update: new Date(),
             };
-            if (prospectData.status === "rejected") {
+            if (prospectData.status === "prospect") {
+                res.status(201).json({
+                    message: "prospect already present with prospect status",
+                    status: prospectData.status,
+                    is_avalabile: false
+                });
+            } else if (prospectData.status === "rejected") {
                 data.status = "prospect";
                 const updateRecord = await updateFirestoreRecord(docPath, data);
                 if (updateRecord && updateRecord.status === 200) {
@@ -132,8 +144,26 @@ exports.postProspect = async (req, res, next) => {
                     status: prospectData.status,
                     is_avalabile: false
                 });
+            } else if (prospectData.status === "lead") {
+                res.status(201).json({
+                    message: "prospect already present with lead status",
+                    status: prospectData.status,
+                    is_avalabile: false
+                });
             } else {
                 const updateRecord = await updateFirestoreRecord(docPath, data);
+                if(!prospectData.location) {
+                    prospectData.status = 'prelead_without_location';
+                }
+                if(prospectData.location) {
+                    prospectData.status = 'prelead_with_location';
+                }
+                if(prospectData.vehicle_type_codes) {
+                    prospectData.status = 'prelead_with_vehicle_category';
+                }
+                if(prospectData.vehicle_subcategory_codes) {
+                    prospectData.status = 'prelead_with_vehicle_type';
+                }
                 if (updateRecord && updateRecord.status === 200) {
                     res.status(200).json({
                         message:
@@ -153,6 +183,7 @@ exports.putProspect = async (req, res, next) => {
     const {
         full_name,
         vehicles,
+        vehicle_subcategory,
         email,
         session_time,
         location,
@@ -163,13 +194,18 @@ exports.putProspect = async (req, res, next) => {
         referred_by_name,
         referred_by_phone,
         source,
-        created_by = 'user'
+        created_by = 'user',
+        pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = [];
+    let vehicleSubcategoryCode = [];
 
     if (vehicles) {
         vehicleCodes = vehicles.split(',');
+    }
+    if(vehicle_subcategory) {
+        vehicleSubcategoryCode = vehicle_subcategory.split(',')
     }
 
     const snapshot = await getFirestoreRecord(leadCollectionPath, {
@@ -186,8 +222,8 @@ exports.putProspect = async (req, res, next) => {
         }
         let data = {
             full_name: full_name || prospectData.full_name,
-            vehicle_type_codes:
-                (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
+            vehicle_type_codes: (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
+            vehicle_subcategory_codes: (vehicle_subcategory && vehicleSubcategoryCode) || prospectData.vehicle_subcategory_codes || null,
             email: email || "",
             session_time: null,
             session_timestamp: null,
@@ -227,6 +263,9 @@ exports.putProspect = async (req, res, next) => {
             data.referred_by_name = '';
             data.referred_by_phone = '';
         }
+        if (created_by && created_by === 'admin' && pr_user_id) {
+            data['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+        } 
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
             if(status && status !== prospectData.status) {
@@ -308,6 +347,11 @@ exports.postProspectQualify = async (req, res, next) => {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
+                if (created_by && created_by !== 'admin') {
+                    const nohemi = interviewers.find(i => i.pr_user_id === 50);
+                    prospectData['interviewer_details'] = nohemi;
+                    data['interviewer_details'] = nohemi;
+                }
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
                 if (addRecord && addRecord.status === 200) {
                 } else {
