@@ -38,7 +38,7 @@ exports.postProspect = async (req, res, next) => {
         referred_by_phone,
         created_by = "user",
         user_language,
-        source, 
+        source,
         pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -73,7 +73,7 @@ exports.postProspect = async (req, res, next) => {
             };
             if (created_by && created_by !== 'admin') {
                 prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 51);
-            } else if(pr_user_id) {
+            } else if (pr_user_id) {
                 prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
             }
             const docPath = leadDocPath.replace(
@@ -127,7 +127,7 @@ exports.postProspect = async (req, res, next) => {
                 data.status = "prospect";
                 const updateRecord = await updateFirestoreRecord(docPath, data);
                 if (updateRecord && updateRecord.status === 200) {
-                    const pData = {...prospectData, status: "prospect", created_by: created_by};
+                    const pData = { ...prospectData, status: "prospect", created_by: created_by };
                     addleadLog(pData);
                     res.status(200).json({
                         message:
@@ -152,16 +152,16 @@ exports.postProspect = async (req, res, next) => {
                 });
             } else {
                 const updateRecord = await updateFirestoreRecord(docPath, data);
-                if(!prospectData.location) {
+                if (!prospectData.location) {
                     prospectData.status = 'prelead_without_location';
                 }
-                if(prospectData.location) {
+                if (prospectData.location) {
                     prospectData.status = 'prelead_with_location';
                 }
-                if(prospectData.vehicle_type_codes) {
+                if (prospectData.vehicle_type_codes) {
                     prospectData.status = 'prelead_with_vehicle_category';
                 }
-                if(prospectData.vehicle_subcategory_codes) {
+                if (prospectData.vehicle_subcategory_codes) {
                     prospectData.status = 'prelead_with_vehicle_type';
                 }
                 if (updateRecord && updateRecord.status === 200) {
@@ -201,10 +201,10 @@ exports.putProspect = async (req, res, next) => {
     let vehicleCodes = [];
     let vehicleSubcategoryCode = [];
 
-    if (vehicles) {
+    if (vehicles && typeof vehicles != 'object') {
         vehicleCodes = vehicles.split(',');
     }
-    if(vehicle_subcategory) {
+    if (vehicle_subcategory && typeof vehicle_subcategory != 'object') {
         vehicleSubcategoryCode = vehicle_subcategory.split(',')
     }
 
@@ -259,17 +259,17 @@ exports.putProspect = async (req, res, next) => {
         if (status && status !== prospectData.status) {
             data["last_status_update"] = new Date();
         }
-        if(prospectData.source === 'referidos' && source && source !== prospectData.source) {
+        if (prospectData.source === 'referidos' && source && source !== prospectData.source) {
             data.referred_by_name = '';
             data.referred_by_phone = '';
         }
         if (created_by && created_by === 'admin' && pr_user_id) {
-            data['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
-        } 
+            data['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id) || {};
+        }
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
-            if(status && status !== prospectData.status) {
-                const pData = {...prospectData, status: status, created_by: created_by};
+            if (status && status !== prospectData.status) {
+                const pData = { ...prospectData, status: status, created_by: created_by };
                 addleadLog(pData);
             }
             res.status(200).json({ message: "updated the truora data" });
@@ -313,8 +313,8 @@ exports.putProspectStatus = async (req, res, next) => {
         const docPath = leadDocPath.replace(":prospect_uuid", prospectID);
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
-            if(status && status !== prospectData.status) {
-                const pData = {...prospectData, status: status, created_by: created_by};
+            if (status && status !== prospectData.status) {
+                const pData = { ...prospectData, status: status, created_by: created_by };
                 addleadLog(pData);
             }
             res.status(200).json({ message: "updated the truora data" });
@@ -374,8 +374,8 @@ exports.postProspectQualify = async (req, res, next) => {
                 addLog(log2Path, log2Data)
                 const updateLeadRecord = await updateFirestoreRecord(leadDocumentPath, data);
                 if (updateLeadRecord && updateLeadRecord.status === 200) {
-                    if(status && status !== prospectData.status) {
-                        const pData = {...prospectData, status: status, created_by: created_by};
+                    if (status && status !== prospectData.status) {
+                        const pData = { ...prospectData, status: status, created_by: created_by };
                         addleadLog(pData);
                     }
                     res.status(200).json({ message: `added driver lead ${leadID} and updated the truora profile ${prospectID}`, });

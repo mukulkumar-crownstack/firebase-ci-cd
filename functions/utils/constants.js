@@ -1,7 +1,7 @@
 exports.driverAvailabiltyData = exports.partunnerBaseUrl = exports.firebaseProjectID = exports.YARDSTIK = exports.Slack_URL = exports.es = exports.en = void 0;
 exports.en = {
     "language": "en",
-    "Name": "Name",
+    "name": "name",
     "Phone Number": "Phone Number",
     "Driver Type": "Driver Type",
     "City": "City",
@@ -38,7 +38,7 @@ exports.en = {
 };
 exports.es = {
     "language": "es",
-    "Name": "Nombre",
+    "name": "Nombre",
     "Phone Number": "Número de Teléfono",
     "Driver Type": "Tipo de Conductor",
     "City": "Ciudad",
@@ -279,7 +279,7 @@ exports.zoneData = {
         zipcode: 1000,
         location: "Ciudad de México"
     },
-    "Estado de México" : {
+    "Estado de México": {
         operating_city: {
             "Country": "MX",
             "State": "MEX",
@@ -297,8 +297,8 @@ exports.zoneData = {
         pr_zone_code: "mx-mex-zone-1",
         zipcode: 53598,
         location: "Estado de México"
-    }, 
-    "Puebla" : {
+    },
+    "Puebla": {
         operating_city: {
             "Country": "MX",
             "State": "PBC",
@@ -317,7 +317,7 @@ exports.zoneData = {
         zipcode: 72000,
         location: "Puebla"
     },
-    "Jalisco" : {
+    "Jalisco": {
         operating_city: {
             "Country": "MX",
             "State": "GDL",
@@ -336,7 +336,7 @@ exports.zoneData = {
         zipcode: 44100,
         location: "Jalisco"
     },
-    "Nuevo León" : {
+    "Nuevo León": {
         operating_city: {
             "Country": "MX",
             "State": "MTY",
@@ -355,7 +355,7 @@ exports.zoneData = {
         zipcode: 64600,
         location: "Nuevo León"
     },
-    "Toluca" : {
+    "Toluca": {
         operating_city: {
             "Country": "MX",
             "State": "MEX",
@@ -472,23 +472,48 @@ exports.sourceData = [
     {
         name: "TikTok",
         code: "tiktok"
+    },
+    {
+        name: "Talenteca",
+        code: "talenteca"
     }
 ]
 
 exports.interviewers = [
     {
-        designation: 'Driver Hiring Specialist',
-        email: 'a.pastrana@partrunner.com',
-        name: 'Ana',
-        pr_user_id: 51,
-        profile_picture: 'https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/ana_thumb.jpg'
+        pr_user_id: 50,
+        name: "Nohemi Pizano",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/nohemi_thumb.jpg",
+        designation: "Driver Hiring Specialist",
+        email: "n.pizano@partrunner.com"
     },
     {
-        designation: 'Driver Hiring Specialist',
-        email: 'n.pizano@partrunner.com',
-        name: 'Nohemi Pizano',
-        pr_user_id: 50,
-        profile_picture: 'https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/nohemi_thumb.jpg'
+        pr_user_id: 51,
+        name: "Ana Perez",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/ana_thumb.jpg",
+        designation: "Driver Hiring Specialist",
+        email: "a.perez@partrunner.com "
     },
+    {
+        pr_user_id: 52,
+        name: "Brenda Otrega",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/Brenda.jpeg",
+        designation: "Driver Hiring Specialist",
+        email: "b.ortega@partrunner.com"
+    },
+    {
+        pr_user_id: 53,
+        name: "Enya Garcia",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/enya.jpg",
+        designation: "Driver Hiring Specialist",
+        email: "e.garcia@partrunner.com "
+    },
+    {
+        pr_user_id: 54,
+        name: "Karen Castrejon",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/karen.jpg",
+        designation: "Driver Hiring Specialist",
+        email: "k.castrejon@partrunner.com"
+    }
 ]
 //# sourceMappingURL=constants.js.map
