@@ -1,7 +1,7 @@
 exports.driverAvailabiltyData = exports.partunnerBaseUrl = exports.firebaseProjectID = exports.YARDSTIK = exports.Slack_URL = exports.es = exports.en = void 0;
 exports.en = {
     "language": "en",
-    "name": "name",
+    "Name": "name",
     "Phone Number": "Phone Number",
     "Driver Type": "Driver Type",
     "City": "City",
@@ -38,7 +38,7 @@ exports.en = {
 };
 exports.es = {
     "language": "es",
-    "name": "Nombre",
+    "Name": "Nombre",
     "Phone Number": "Número de Teléfono",
     "Driver Type": "Tipo de Conductor",
     "City": "Ciudad",

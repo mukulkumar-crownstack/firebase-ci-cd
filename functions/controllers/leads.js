@@ -201,10 +201,10 @@ exports.putProspect = async (req, res, next) => {
     let vehicleCodes = [];
     let vehicleSubcategoryCode = [];
 
-    if (vehicles && typeof vehicles != 'object') {
+    if (vehicles) {
         vehicleCodes = vehicles.split(',');
     }
-    if (vehicle_subcategory && typeof vehicle_subcategory != 'object') {
+    if (vehicle_subcategory) {
         vehicleSubcategoryCode = vehicle_subcategory.split(',')
     }
 
