@@ -16,7 +16,7 @@ const algoliaClient = algoliasearch.default(
     ALGOLIA_API_KEY
 );
 
-const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead.qa);
+const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead.staging);
 
 exports.deleteDocumentFromAlgolia = async (snapshot) => {
     if (snapshot.exists) {
