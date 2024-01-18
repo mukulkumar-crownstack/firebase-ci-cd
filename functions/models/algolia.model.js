@@ -9,7 +9,7 @@ const getENV = () => {
     return env;
 }
 
-const ALGOLIA_API_KEY = algoliaClientKey.qa;
+const ALGOLIA_API_KEY = algoliaClientKey.staging;
 
 const algoliaClient = algoliasearch.default(
     ALGOLIA_APPLICATION_ID,
