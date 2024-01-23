@@ -26,11 +26,10 @@ exports.sendSlackNotification = ((text, countryCode) => {
             "Content-Type": "application/json"
         },
     };
-    console.log('sendSlackNotification Url......', env , slackHookUrl);
+    console.log('sendSlackNotification Url......', env, slackHookUrl);
     return axios.post(slackHookUrl, JSON.stringify({ text: text }), options).then(response => {
         console.log("Successful");
-    })
-        .catch(error => {
+    }).catch(error => {
         console.log("Error", error);
     });
 });
@@ -42,7 +41,7 @@ exports.sendSms = ((to, text, from, cb) => {
         from: from,
     }).then(() => {
         console.log("Queued message for delivery!");
-        cb({msg: "Queued message for delivery!", status: "success"});
+        cb({ msg: "Queued message for delivery!", status: "success" });
     }).catch(err => cb(err));
 });
 // exports.sendScheduledWhatsapp = (to, text, from, secheduledTime) => {
@@ -73,8 +72,12 @@ const getPartrunnerBaseURL = (panelName) => {
 exports.getPartrunnerBaseURL = getPartrunnerBaseURL;
 
 const geENVName = (() => {
-    const projectId = admin.instanceId().app.options.projectId;
-    return constants.firebaseProjectID[projectId];
+    try {
+        const projectId = admin.instanceId().app.options.projectId;
+        return constants.firebaseProjectID[projectId];
+    } catch (e) {
+        return 'qa'
+    }
 });
 exports.geENVName = geENVName;
 
@@ -94,15 +97,15 @@ exports.generateUUID = uuidString;
 exports.getPhoneFromPhoneNumber = ((phoneNumber) => {
     const idx = phoneNumber.indexOf('+1') === 0 ? 2 : 3;
     const phone = phoneNumber.substring(idx);
-    if(phone.length === 11) {
-       return phoneNumber.substring(idx+1);
+    if (phone.length === 11) {
+        return phoneNumber.substring(idx + 1);
     }
     return phone;
 });
 
 exports.getZoneDetailsFromLocationName = ((locationName) => {
     const zoneDetails = constants.zoneData[locationName];
-    return zoneDetails ? zoneDetails: {
+    return zoneDetails ? zoneDetails : {
         operating_city: {
             "Country": "MX",
             "State": "CMX",
