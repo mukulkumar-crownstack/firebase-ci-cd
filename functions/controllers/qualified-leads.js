@@ -215,7 +215,7 @@ exports.putQualifiedVehicle = async (req, res, next) => {
             if (data.application_status && data.application_status != docData.application_status) {
                 docData['previousStatus'] = docData.application_status;
                 docData['application_status'] = data.application_status;
-            } else delete docData['application_status']
+            } else delete docData['application_status'];
             docData['updated_by'] = data.updated_by;
             addLog(logPath, docData);
             res.status(200).json({ message: "Updated vehicle details" });
@@ -239,8 +239,10 @@ exports.putQualifiedVehicleStatus = async (req, res, next) => {
             const isUpdated = await updateRecord(docID, data);
             if (isUpdated.status === 200) {
                 const logPath = `${qulifiedleadDocPath.replace(":doc_uuid", docID)}/change_logs/${new Date().toISOString()}`;
-                docData['previousStatus'] = docData.application_status;
-                docData['application_status'] = data.application_status;
+                if (data.application_status && data.application_status != docData.application_status) {
+                    docData['previousStatus'] = docData.application_status;
+                    docData['application_status'] = data.application_status;
+                } else delete docData['application_status'];
                 docData['updated_by'] = data.updated_by;
                 addLog(logPath, docData);
                 res.status(200).json({ message: "Updated dispatch driver status" });
