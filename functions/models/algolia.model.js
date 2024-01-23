@@ -9,14 +9,18 @@ const getENV = () => {
     return env;
 }
 
-const ALGOLIA_API_KEY = algoliaClientKey.qa;
+const env = getENV();
+
+const ALGOLIA_API_KEY = algoliaClientKey[env];
 
 const algoliaClient = algoliasearch.default(
     ALGOLIA_APPLICATION_ID,
     ALGOLIA_API_KEY
 );
 
-const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead.qa);
+const algoliaQualifiedLeadIndex = algoliaClient.initIndex(algoliaIndex.qualified_lead[env]);
+
+console.log("Got env:", env, algoliaIndex.qualified_lead[env]);
 
 exports.deleteDocumentFromAlgolia = async (snapshot) => {
     if (snapshot.exists) {
@@ -43,7 +47,7 @@ exports.saveDocumentInAlgolia = async (snapshot) => {
             if (record.session_date) {
                 record.session_date = new Date(record.session_date.toDate()).valueOf();
             }
-            console.log(record.phone, algoliaIndex.qualified_lead.staging, ALGOLIA_API_KEY)
+            console.log(record.phone, algoliaIndex.qualified_lead[env], ALGOLIA_API_KEY)
             await algoliaQualifiedLeadIndex.saveObject(record);
         }
     }

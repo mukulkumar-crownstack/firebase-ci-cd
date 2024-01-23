@@ -145,58 +145,58 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         vehicle_type_id,
         updated_by
     } = req.body;
-        const vehicleUUID = generateUUID();
-        const vehicleData = {
-            full_name: full_name,
-            phone_country_code: "mx",
-            application_status: ApplicationStatus.IN_PROGRESS,
-            created_datetime: new Date(),
-            update_datetime: new Date(),
-            created_by: created_by,
-            dispatch_company_uuid: dispatch_company_uuid,
-            dispatch_company_id: dispatch_company_id,
-            driver_user_uuid: driver_uuid,
-            driver_id: driver_id,
-            vehicle_uuid: vehicleUUID,
-            application_type: 'vehicle',
-            how_many_vehicles: 1,
-            driver_type_code: driver_type == 1 ? Driver_Type_Code.cliente_independiente : Driver_Type_Code.flotilleros,
+    const vehicleUUID = generateUUID();
+    const vehicleData = {
+        full_name: full_name,
+        phone_country_code: "mx",
+        application_status: ApplicationStatus.IN_PROGRESS,
+        created_datetime: new Date(),
+        update_datetime: new Date(),
+        created_by: created_by,
+        dispatch_company_uuid: dispatch_company_uuid,
+        dispatch_company_id: dispatch_company_id,
+        driver_user_uuid: driver_uuid,
+        driver_id: driver_id,
+        vehicle_uuid: vehicleUUID,
+        application_type: 'vehicle',
+        how_many_vehicles: 1,
+        driver_type_code: driver_type == 1 ? Driver_Type_Code.cliente_independiente : Driver_Type_Code.flotilleros,
+        vehicle_type: vehicle_type,
+        vehicle_type_id: vehicle_type_id,
+        driver_user_type_id: driver_type
+    };
+    vehicleData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+    const dispatchDriverDOCID = `vehicle_${vehicleData.phone_country_code}_${vehicleUUID}_${dispatch_company_uuid ? dispatch_company_uuid : driver_uuid}`;
+    const docPath = qulifiedleadDocPath.replace(
+        ":doc_uuid",
+        dispatchDriverDOCID
+    );
+    const addRecord = await addFirestoreRecord(docPath, vehicleData);
+    if (addRecord && addRecord.status === 200) {
+        vehicleData['updated_by'] = updated_by;
+        const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
+        const vehicleDocPath = `${docPath}/vehicle_info/${vehicleUUID}`;
+        const data = {
+            code: vehicleUUID,
+            license_plate: null,
+            manufacturer: null,
+            model: null,
+            name: 'Vehicle 1 Info',
+            vehicle_back_proof: null,
+            vehicle_left_side_proof: null,
             vehicle_type: vehicle_type,
-            vehicle_type_id: vehicle_type_id,
-            driver_user_type_id: driver_type
-        };
-        vehicleData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
-        const dispatchDriverDOCID = `vehicle_${vehicleData.phone_country_code}_${vehicleUUID}_${dispatch_company_uuid ? dispatch_company_uuid: driver_uuid}`;
-        const docPath = qulifiedleadDocPath.replace(
-            ":doc_uuid",
-            dispatchDriverDOCID
-        );
-        const addRecord = await addFirestoreRecord(docPath, vehicleData);
-        if (addRecord && addRecord.status === 200) {
-            vehicleData['updated_by'] = updated_by;
-            const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
-            const vehicleDocPath = `${docPath}/vehicle_info/${vehicleUUID}`;
-            const data = {
-                code: vehicleUUID,
-                license_plate: null,
-                manufacturer: null,
-                model: null,
-                name: 'Vehicle 1 Info',
-                vehicle_back_proof: null,
-                vehicle_left_side_proof: null,
-                vehicle_type: vehicle_type,
-                year: null,
-                images: []
-            }
-            addFirestoreRecord(vehicleDocPath, data);
-            addLog(logPath, vehicleData);
-            res.status(200).json({
-                message: "added vehicle driver",
-                status: vehicleData.status
-            });
-        } else {
-            res.status(500).json(addRecord.error);
+            year: null,
+            images: []
         }
+        addFirestoreRecord(vehicleDocPath, data);
+        addLog(logPath, vehicleData);
+        res.status(200).json({
+            message: "added vehicle driver",
+            status: vehicleData.status
+        });
+    } else {
+        res.status(500).json(addRecord.error);
+    }
 };
 
 exports.putQualifiedVehicle = async (req, res, next) => {
@@ -212,8 +212,10 @@ exports.putQualifiedVehicle = async (req, res, next) => {
         const isUpdated = await updateRecord(docID, data);
         if (isUpdated.status === 200) {
             const logPath = `${qulifiedleadDocPath.replace(":doc_uuid", docID)}/change_logs/${new Date().toISOString()}`;
-            docData['previousStatus'] = docData.application_status;
-            docData['application_status'] = data.application_status;
+            if (data.application_status && data.application_status != docData.application_status) {
+                docData['previousStatus'] = docData.application_status;
+                docData['application_status'] = data.application_status;
+            } else delete docData['application_status']
             docData['updated_by'] = data.updated_by;
             addLog(logPath, docData);
             res.status(200).json({ message: "Updated vehicle details" });
@@ -277,7 +279,7 @@ const updateRecord = async (docID, data) => {
 const addLog = (logDocPath, data) => {
     const logVal = {
         previousStatus: data.previousStatus || '',
-        currentStatus: data.application_status,
+        currentStatus: data.application_status || '',
         updatedDateTime: new Date(),
         action: data.created_by,
         updatedBy: data.updated_by
