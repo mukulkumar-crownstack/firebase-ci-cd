@@ -121,7 +121,7 @@ exports.putQualifiedDriverStatus = async (req, res, next) => {
                 docData['application_status'] = data.application_status;
                 docData['updated_by'] = data.updated_by;
                 addLog(logPath, docData);
-                res.status(200).json({ message: "Updated vehicle status" });
+                res.status(200).json({ message: "Updated dispatch driver status successfully." });
             } else {
                 res.status(500).json(isUpdated.error);
             }
@@ -245,7 +245,7 @@ exports.putQualifiedVehicleStatus = async (req, res, next) => {
                 } else delete docData['application_status'];
                 docData['updated_by'] = data.updated_by;
                 addLog(logPath, docData);
-                res.status(200).json({ message: "Updated dispatch driver status" });
+                res.status(200).json({ message: "Updated vehicle status successfully." });
             } else {
                 res.status(500).json(isUpdated.error);
             }
