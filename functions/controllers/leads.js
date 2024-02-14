@@ -3,7 +3,7 @@ const moment = require("moment");
 
 const helper_functions = require("../utils/helper.functions");
 const { getFirestoreRecord, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
-const { sourceData, interviewers } = require("../utils/constants");
+const { sourceData, interviewers, vehicleCodes } = require("../utils/constants");
 
 const leadCollectionPath = "driver_lead/leads/prospects";
 const leadDocPath = "driver_lead/leads/prospects/:prospect_uuid";
@@ -198,12 +198,8 @@ exports.putProspect = async (req, res, next) => {
         pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
-    let vehicleCodes = [];
+    // let vehicleCodes = [];
     let vehicleSubcategoryCode = [];
-
-    if (vehicles) {
-        vehicleCodes = vehicles.split(',');
-    }
     if (vehicle_subcategory) {
         vehicleSubcategoryCode = vehicle_subcategory.split(',')
     }
@@ -222,7 +218,7 @@ exports.putProspect = async (req, res, next) => {
         }
         let data = {
             full_name: full_name || prospectData.full_name,
-            vehicle_type_codes: (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
+            vehicle_type_codes: null,
             vehicle_subcategory_codes: (vehicle_subcategory && vehicleSubcategoryCode) || prospectData.vehicle_subcategory_codes || null,
             email: email || "",
             session_time: null,
@@ -240,6 +236,16 @@ exports.putProspect = async (req, res, next) => {
         };
         if (zoneDetails) {
             data = { ...data, ...zoneDetails };
+        }
+        if (vehicles) {
+            const vehicleValue = vehicles.split(',');
+            const v = vehicleCodes.find(v => v.vehicle_code.includes(vehicleValue));
+            if(v) {
+                data.vehicle_subcategory_codes = vehicleValue;
+                data.vehicle_type_codes = [v.code];
+            }
+        } else {
+            data.vehicle_type_codes = prospectData.vehicle_type_codes;
         }
         if (session_time) {
             const t = moment()
