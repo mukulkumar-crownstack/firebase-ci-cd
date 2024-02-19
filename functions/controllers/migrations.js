@@ -13,7 +13,7 @@ exports.getMigrationsFirestoreData = async (req, res, next) => {
 
 exports.postMigrationsFirestoreData = async (req, res, next) => {
     const { data, country_code } = req.body;
-    admin.firestore().doc('driver_lead_metadata/' + country_code).set(data).then((documentSnapshot) => {
+    admin.firestore().doc('driver_lead_metadata/' + country_code).update(data).then((documentSnapshot) => {
         res.status(200).json({ message: "updated" });
     });
 }
