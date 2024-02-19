@@ -2,13 +2,14 @@ const admin = require("firebase-admin");
 const moment = require("moment");
 
 const helper_functions = require("../utils/helper.functions");
-const { getFirestoreRecord, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
-const { sourceData, interviewers, vehicleCodes } = require("../utils/constants");
+const { getFirestoreRecord, getFirestoreDocument, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
+const { sourceData, interviewers } = require("../utils/constants");
 
 const leadCollectionPath = "driver_lead/leads/prospects";
 const leadDocPath = "driver_lead/leads/prospects/:prospect_uuid";
 const qulifiedleadCollectionPath = "driver_lead";
 const qulifiedleadDocPath = `driver_lead/:lead_uuid`;
+const vehicleTypesMetadata = "driver_lead_metadata/vehicle_types";
 const getLeadFromSnapshot = (snapshot) => ({
     prospectID: snapshot.docs[0].id,
     prospectData: snapshot.docs[0].data(),
@@ -183,6 +184,10 @@ exports.putProspect = async (req, res, next) => {
     const {
         full_name,
         vehicles,
+        vehicle_category,
+        vehicle_configuration,
+        vehicle_capacity,
+        calculate_vehicle_type,
         vehicle_subcategory,
         email,
         session_time,
@@ -198,12 +203,14 @@ exports.putProspect = async (req, res, next) => {
         pr_user_id
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
-    // let vehicleCodes = [];
+    let vehicleCodes = [];
+    if (vehicles) {
+        vehicleCodes = vehicles.split(',')
+    }
     let vehicleSubcategoryCode = [];
     if (vehicle_subcategory) {
         vehicleSubcategoryCode = vehicle_subcategory.split(',')
     }
-
     const snapshot = await getFirestoreRecord(leadCollectionPath, {
         key: "phone",
         operator: "==",
@@ -218,8 +225,11 @@ exports.putProspect = async (req, res, next) => {
         }
         let data = {
             full_name: full_name || prospectData.full_name,
-            vehicle_type_codes: null,
+            vehicle_type_codes: (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
             vehicle_subcategory_codes: (vehicle_subcategory && vehicleSubcategoryCode) || prospectData.vehicle_subcategory_codes || null,
+            vehicle_category: vehicle_category || prospectData.vehicle_category || null,
+            vehicle_configuration: vehicle_configuration || prospectData.vehicle_configuration || null,
+            vehicle_capacity: vehicle_capacity || prospectData.vehicle_capacity || null,
             email: email || "",
             session_time: null,
             session_timestamp: null,
@@ -239,13 +249,24 @@ exports.putProspect = async (req, res, next) => {
         }
         if (vehicles) {
             const vehicleValue = vehicles.split(',');
-            const v = vehicleCodes.find(v => v.vehicle_code.includes(vehicleValue));
-            if(v) {
-                data.vehicle_subcategory_codes = vehicleValue;
-                data.vehicle_type_codes = [v.code];
-            }
+            data.vehicle_type_codes = vehicleValue;
         } else {
             data.vehicle_type_codes = prospectData.vehicle_type_codes;
+        }
+        if(calculate_vehicle_type) {
+            const vehicleTypesCodes = await getFirestoreDocument(vehicleTypesMetadata);
+            console.log(vehicleTypesCodes);
+            const vehicleCategory = vehicleTypesCodes[data.vehicle_category];
+            if(vehicleCategory) {
+                const vehicleConfig = vehicleCategory[data.vehicle_configuration];
+                if(vehicleConfig && data.vehicle_capacity) {
+                   const unit = vehicleConfig.units.find(u => u.capacity.includes(data.vehicle_capacity));
+                   if(unit) {
+                       data.vehicle_subcategory_codes = [unit['vehicle_type_codes']];
+                       data.vehicle_type_codes = [data.vehicle_category]
+                   } 
+                }
+            }
         }
         if (session_time) {
             const t = moment()
