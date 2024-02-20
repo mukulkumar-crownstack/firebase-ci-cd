@@ -184,7 +184,6 @@ exports.putProspect = async (req, res, next) => {
     const {
         full_name,
         vehicles,
-        vehicle_category,
         vehicle_configuration,
         vehicle_capacity,
         calculate_vehicle_type,
@@ -227,7 +226,6 @@ exports.putProspect = async (req, res, next) => {
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes: (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
             vehicle_subcategory_codes: (vehicle_subcategory && vehicleSubcategoryCode) || prospectData.vehicle_subcategory_codes || null,
-            vehicle_category: vehicle_category || prospectData.vehicle_category || null,
             vehicle_configuration: vehicle_configuration || prospectData.vehicle_configuration || null,
             vehicle_capacity: vehicle_capacity || prospectData.vehicle_capacity || null,
             email: email || "",
@@ -247,23 +245,15 @@ exports.putProspect = async (req, res, next) => {
         if (zoneDetails) {
             data = { ...data, ...zoneDetails };
         }
-        if (vehicles) {
-            const vehicleValue = vehicles.split(',');
-            data.vehicle_type_codes = vehicleValue;
-        } else {
-            data.vehicle_type_codes = prospectData.vehicle_type_codes;
-        }
         if(calculate_vehicle_type) {
             const vehicleTypesCodes = await getFirestoreDocument(vehicleTypesMetadata);
-            console.log(vehicleTypesCodes);
-            const vehicleCategory = vehicleTypesCodes[data.vehicle_category];
+            const vehicleCategory = vehicleTypesCodes[data.vehicle_type_codes[0]];
             if(vehicleCategory) {
                 const vehicleConfig = vehicleCategory[data.vehicle_configuration];
                 if(vehicleConfig && data.vehicle_capacity) {
                    const unit = vehicleConfig.units.find(u => u.capacity.includes(data.vehicle_capacity));
                    if(unit) {
                        data.vehicle_subcategory_codes = [unit['vehicle_type_codes']];
-                       data.vehicle_type_codes = [data.vehicle_category]
                    } 
                 }
             }
