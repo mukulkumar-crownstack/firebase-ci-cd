@@ -192,7 +192,8 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         addLog(logPath, vehicleData);
         res.status(200).json({
             message: "added vehicle driver",
-            status: vehicleData.status
+            status: vehicleData.status,
+            vehicleData: vehicleData
         });
     } else {
         res.status(500).json(addRecord.error);
