@@ -200,7 +200,11 @@ exports.putProspect = async (req, res, next) => {
         source,
         created_by = 'user',
         pr_user_id,
-        driver_type_code
+        driver_type_code,
+        country_code,
+        pr_zone,
+        pr_market,
+        pr_operation_centre_code
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = [];
@@ -244,6 +248,9 @@ exports.putProspect = async (req, res, next) => {
             source: source || prospectData.source,
             driver_type_code: driver_type_code || prospectData.driver_type_code || null
         };
+        if (pr_operation_centre_code) {
+            data.pr_operation_centre_code = pr_operation_centre_code || `${country_code.toLowerCase()}-${pr_market.toLowerCase()}-${pr_zone.toLowerCase()}`;
+        }
         if (zoneDetails) {
             data = { ...data, ...zoneDetails };
         }
