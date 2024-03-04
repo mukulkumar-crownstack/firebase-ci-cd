@@ -372,6 +372,9 @@ exports.postProspectQualify = async (req, res, next) => {
             const snapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
             if (snapshot.size === 0) {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
+                if(prospectData.driver_type_code === 'cliente_independiente') {
+                    prospectData['dispatch_driver_uuid'] = prospectData.prospect_uuid;
+                }
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
                 if (created_by && created_by !== 'admin') {
