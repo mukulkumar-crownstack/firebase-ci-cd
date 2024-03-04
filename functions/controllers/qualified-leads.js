@@ -51,6 +51,7 @@ exports.postQualifiedDriver = async (req, res, next) => {
             addLog(logPath, prospectData);
             res.status(200).json({
                 message: "added dispatch driver",
+                dispatch_driver_uuid: prospectData.dispatch_driver_uuid,
                 status: prospectData.status,
                 is_avalabile: true
             });
