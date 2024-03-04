@@ -352,7 +352,7 @@ exports.putProspectStatus = async (req, res, next) => {
 };
 
 exports.postProspectQualify = async (req, res, next) => {
-    const { status, phone, created_by = "user", add_dispatch_uuid } = req.body;
+    const { status, phone, created_by = "user" } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     const data = {
         status: status,
