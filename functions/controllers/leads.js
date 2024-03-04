@@ -87,7 +87,8 @@ exports.postProspect = async (req, res, next) => {
                 res.status(200).json({
                     message: "added the truora data",
                     status: prospectData.status,
-                    is_avalabile: true
+                    is_avalabile: true,
+                    prospect_uuid: prospectData.prospect_uuid
                 });
             } else {
                 res.status(500).json(addRecord.error);
@@ -380,6 +381,7 @@ exports.postProspectQualify = async (req, res, next) => {
                 }
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
                 if (addRecord && addRecord.status === 200) {
+
                 } else {
                     res.status(500).json(addRecord.error);
                 }
