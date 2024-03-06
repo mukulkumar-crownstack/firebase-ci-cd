@@ -250,7 +250,9 @@ exports.putProspect = async (req, res, next) => {
             driver_type_code: driver_type_code || prospectData.driver_type_code || null
         };
         if (pr_operation_centre_code) {
-            data.pr_operation_centre_code = pr_operation_centre_code || `${country_code.toLowerCase()}-${pr_market.toLowerCase()}-${pr_zone.toLowerCase()}`;
+            data.pr_operation_centre_code = pr_operation_centre_code;
+            data['pr_market'] = pr_market;
+            data['pr_zone'] = pr_zone;
         }
         if (zoneDetails) {
             data = { ...data, ...zoneDetails };
