@@ -105,12 +105,12 @@ exports.putQualifiedDriver = async (req, res, next) => {
 }
 
 exports.putQualifiedDriverStatus = async (req, res, next) => {
-    const driverUUID = req.params.uuid;
-    // const { driver_type_code } = req.body;
+    const documentUUID = req.params.uuid;
+    const { driver_type_code } = req.body;
     const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
-        key: "driver_uuid",
+        key: driver_type_code === 'cliente_independiente' ? "driver_uuid" :"dispatch_driver_uuid",
         operator: "==",
-        value: driverUUID,
+        value: documentUUID,
     });
     if (snapshot.size > 0) {
         const data = { ...req.body, update_datetime: new Date() };
