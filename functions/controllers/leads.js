@@ -379,6 +379,8 @@ exports.postProspectQualify = async (req, res, next) => {
             if (snapshot.size === 0) {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
                 if(prospectData.driver_type_code === 'cliente_independiente') {
+                    prospectData['driver_user_uuid'] = prospectData.prospect_uuid;
+                } else {
                     prospectData['dispatch_driver_uuid'] = prospectData.prospect_uuid;
                 }
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
