@@ -51,6 +51,7 @@ exports.postQualifiedDriver = async (req, res, next) => {
             addLog(logPath, prospectData);
             res.status(200).json({
                 message: "added dispatch driver",
+                dispatch_driver_uuid: prospectData.dispatch_driver_uuid,
                 status: prospectData.status,
                 is_avalabile: true
             });
@@ -104,11 +105,12 @@ exports.putQualifiedDriver = async (req, res, next) => {
 }
 
 exports.putQualifiedDriverStatus = async (req, res, next) => {
-    const dispatchDriverUUID = req.params.uuid;
+    const documentUUID = req.params.uuid;
+    const { driver_type_code } = req.body;
     const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
-        key: "dispatch_driver_uuid",
+        key: driver_type_code === 'cliente_independiente' ? "driver_uuid" :"dispatch_driver_uuid",
         operator: "==",
-        value: dispatchDriverUUID,
+        value: documentUUID,
     });
     if (snapshot.size > 0) {
         const data = { ...req.body, update_datetime: new Date() };
@@ -192,7 +194,8 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         addLog(logPath, vehicleData);
         res.status(200).json({
             message: "added vehicle driver",
-            status: vehicleData.status
+            status: vehicleData.status,
+            vehicleData: vehicleData
         });
     } else {
         res.status(500).json(addRecord.error);

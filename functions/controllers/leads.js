@@ -87,7 +87,8 @@ exports.postProspect = async (req, res, next) => {
                 res.status(200).json({
                     message: "added the truora data",
                     status: prospectData.status,
-                    is_avalabile: true
+                    is_avalabile: true,
+                    prospect_uuid: prospectData.prospect_uuid
                 });
             } else {
                 res.status(500).json(addRecord.error);
@@ -199,7 +200,12 @@ exports.putProspect = async (req, res, next) => {
         referred_by_phone,
         source,
         created_by = 'user',
-        pr_user_id
+        pr_user_id,
+        driver_type_code,
+        country_code,
+        pr_zone,
+        pr_market,
+        pr_zone_code
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = [];
@@ -240,8 +246,18 @@ exports.putProspect = async (req, res, next) => {
             vehicle_year: vehicle_year || prospectData.vehicle_year || null,
             referred_by_name: referred_by_name || prospectData.referred_by_name || null,
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
-            source: source || prospectData.source
+            source: source || prospectData.source,
+            driver_type_code: driver_type_code || prospectData.driver_type_code || null
         };
+        if (pr_zone_code) {
+            data.pr_zone_code = pr_zone_code;
+        }
+        if (pr_market) {
+            data['pr_market'] = pr_market;
+        }
+        if (pr_zone) {
+            data['pr_zone'] = pr_zone;
+        }
         if (zoneDetails) {
             data = { ...data, ...zoneDetails };
         }
@@ -362,6 +378,11 @@ exports.postProspectQualify = async (req, res, next) => {
             const snapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
             if (snapshot.size === 0) {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
+                if(prospectData.driver_type_code === 'cliente_independiente') {
+                    prospectData['driver_user_uuid'] = prospectData.prospect_uuid;
+                } else {
+                    prospectData['dispatch_driver_uuid'] = prospectData.prospect_uuid;
+                }
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
                 if (created_by && created_by !== 'admin') {
@@ -371,6 +392,7 @@ exports.postProspectQualify = async (req, res, next) => {
                 }
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
                 if (addRecord && addRecord.status === 200) {
+
                 } else {
                     res.status(500).json(addRecord.error);
                 }
