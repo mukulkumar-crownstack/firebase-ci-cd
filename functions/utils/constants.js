@@ -514,6 +514,13 @@ exports.interviewers = [
         profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/karen.jpg",
         designation: "Driver Hiring Specialist",
         email: "k.castrejon@partrunner.com"
+    },
+    {
+        pr_user_id: 57,
+        name: "Cynthia Rodriguez",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/Cynthia.jpeg",
+        designation: "Driver Hiring Specialist",
+        email: "c.rodriguez@partrunner.com"
     }
 ]
 //# sourceMappingURL=constants.js.map
