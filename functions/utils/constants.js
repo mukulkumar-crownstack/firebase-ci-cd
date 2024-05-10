@@ -489,14 +489,14 @@ exports.interviewers = [
     },
     {
         pr_user_id: 51,
-        name: "Ana Perez",
+        name: "Ana Ramírez",
         profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/ana_thumb.jpg",
         designation: "Driver Hiring Specialist",
         email: "a.perez@partrunner.com "
     },
     {
         pr_user_id: 52,
-        name: "Brenda Otrega",
+        name: "Brenda Ortega",
         profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/Brenda.jpeg",
         designation: "Driver Hiring Specialist",
         email: "b.ortega@partrunner.com"
@@ -521,6 +521,27 @@ exports.interviewers = [
         profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/Cynthia.jpeg",
         designation: "Driver Hiring Specialist",
         email: "c.rodriguez@partrunner.com"
+    },
+    {
+        pr_user_id: 58,
+        name: "Brandon Ariasz",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/brandon.png",
+        designation: "Driver Hiring Specialist",
+        email: "b.arias@partrunner.com"
+    }
+    {
+        pr_user_id: 59,
+        name: "Pablo Sanchez",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/pablo.png",
+        designation: "Supply analyst role",
+        email: "p.sanchez@partrunner.com"
+    }
+    {
+        pr_user_id: 60,
+        name: "Alejandro Hernández",
+        profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/alejandro.png",
+        designation: "Admin",
+        email: "a.bermudez@partrunner.com"
     }
 ]
 //# sourceMappingURL=constants.js.map
