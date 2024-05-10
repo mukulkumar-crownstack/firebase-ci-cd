@@ -528,14 +528,14 @@ exports.interviewers = [
         profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/brandon.png",
         designation: "Driver Hiring Specialist",
         email: "b.arias@partrunner.com"
-    }
+    },
     {
         pr_user_id: 59,
         name: "Pablo Sanchez",
         profile_picture: "https://partrunner-staging.s3.us-east-2.amazonaws.com/media/users/pr-users/pablo.png",
         designation: "Supply analyst role",
         email: "p.sanchez@partrunner.com"
-    }
+    },
     {
         pr_user_id: 60,
         name: "Alejandro Hernández",
