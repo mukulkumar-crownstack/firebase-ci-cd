@@ -70,13 +70,14 @@ exports.postProspect = async (req, res, next) => {
                 application_id: `PRD${Math.random().toString().substring(2, 9)}`,
                 referred_by_name: referred_by_name || null,
                 referred_by_phone: referred_by_phone || null,
-                source: sourceName
+                source: sourceName,
+                pr_user_id: pr_user_id || null
             };
-            if (created_by && created_by !== 'admin') {
-                prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 51);
-            } else if (pr_user_id) {
-                prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
-            }
+            // if (created_by && created_by !== 'admin') {
+            //     prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 51);
+            // } else if (pr_user_id) {
+            //     prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+            // }
             const docPath = leadDocPath.replace(
                 ":prospect_uuid",
                 prospectData.prospect_uuid
@@ -191,7 +192,6 @@ exports.putProspect = async (req, res, next) => {
         vehicle_subcategory,
         email,
         session_time,
-        location,
         phone,
         status,
         vehicle_year,
@@ -202,7 +202,6 @@ exports.putProspect = async (req, res, next) => {
         created_by = 'user',
         pr_user_id,
         driver_type_code,
-        // country_code,
         pr_zone,
         pr_market,
         pr_zone_code
@@ -228,6 +227,7 @@ exports.putProspect = async (req, res, next) => {
         // if (location) {
             // zoneDetails = helper_functions.getZoneDetailsFromLocationName(location);
         // }
+
         let data = {
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes: (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
@@ -247,7 +247,8 @@ exports.putProspect = async (req, res, next) => {
             referred_by_name: referred_by_name || prospectData.referred_by_name || null,
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
             source: source || prospectData.source,
-            driver_type_code: driver_type_code || prospectData.driver_type_code || null
+            driver_type_code: driver_type_code || prospectData.driver_type_code || null,
+            pr_user_id: pr_user_id || prospectData.pr_user_id || null
         };
         if (pr_zone_code) {
             data.pr_zone_code = pr_zone_code;
@@ -296,9 +297,10 @@ exports.putProspect = async (req, res, next) => {
             data.referred_by_name = '';
             data.referred_by_phone = '';
         }
-        if (created_by && created_by === 'admin' && pr_user_id) {
-            data['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id) || {};
-        }
+        // if (created_by && created_by === 'admin' && pr_user_id) {
+        //     data['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id) || {};
+        // }
+        // console.log(data);
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
             if (status && status !== prospectData.status) {
@@ -385,11 +387,11 @@ exports.postProspectQualify = async (req, res, next) => {
                 }
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
                 const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
-                if (created_by && created_by !== 'admin') {
-                    const nohemi = interviewers.find(i => i.pr_user_id === 50);
-                    prospectData['interviewer_details'] = nohemi;
-                    data['interviewer_details'] = nohemi;
-                }
+                // if (created_by && created_by !== 'admin') {
+                //     const nohemi = interviewers.find(i => i.pr_user_id === 50);
+                //     prospectData['interviewer_details'] = nohemi;
+                //     data['interviewer_details'] = nohemi;
+                // }
                 const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
                 if (addRecord && addRecord.status === 200) {
 
