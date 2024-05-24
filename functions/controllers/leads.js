@@ -202,7 +202,7 @@ exports.putProspect = async (req, res, next) => {
         created_by = 'user',
         pr_user_id,
         driver_type_code,
-        country_code,
+        // country_code,
         pr_zone,
         pr_market,
         pr_zone_code
@@ -224,10 +224,10 @@ exports.putProspect = async (req, res, next) => {
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const docPath = leadDocPath.replace(":prospect_uuid", prospectID);
-        let zoneDetails = null;
-        if (location) {
-            zoneDetails = helper_functions.getZoneDetailsFromLocationName(location);
-        }
+        // let zoneDetails = null;
+        // if (location) {
+            // zoneDetails = helper_functions.getZoneDetailsFromLocationName(location);
+        // }
         let data = {
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes: (vehicles && vehicleCodes) || prospectData.vehicle_type_codes || null,
@@ -258,9 +258,9 @@ exports.putProspect = async (req, res, next) => {
         if (pr_zone) {
             data['pr_zone'] = pr_zone;
         }
-        if (zoneDetails) {
-            data = { ...data, ...zoneDetails };
-        }
+        // if (zoneDetails) {
+        //     data = { ...data, ...zoneDetails };
+        // }
         if(calculate_vehicle_type) {
             const vehicleTypesCodes = await getFirestoreDocument(vehicleTypesMetadata);
             const vehicleCategory = vehicleTypesCodes[data.vehicle_type_codes[0]];
