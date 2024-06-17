@@ -204,7 +204,8 @@ exports.putProspect = async (req, res, next) => {
         driver_type_code,
         pr_zone,
         pr_market,
-        pr_zone_code
+        pr_zone_code,
+        pr_operation_centres
     } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = [];
@@ -248,7 +249,7 @@ exports.putProspect = async (req, res, next) => {
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
             source: source || prospectData.source,
             driver_type_code: driver_type_code || prospectData.driver_type_code || null,
-            pr_user_id: pr_user_id || prospectData.pr_user_id || null
+            pr_user_id: pr_user_id || prospectData.pr_user_id || null,
         };
         if (pr_zone_code) {
             data.pr_zone_code = pr_zone_code;
@@ -258,6 +259,9 @@ exports.putProspect = async (req, res, next) => {
         }
         if (pr_zone) {
             data['pr_zone'] = pr_zone;
+        }
+        if(pr_operation_centres) {
+            data.pr_operation_centres = pr_operation_centres
         }
         // if (zoneDetails) {
         //     data = { ...data, ...zoneDetails };
