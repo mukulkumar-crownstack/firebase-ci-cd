@@ -36,9 +36,10 @@ exports.postQualifiedDriver = async (req, res, next) => {
             dispatch_company_uuid: dispatch_company_uuid,
             dispatch_driver_uuid: dispatchDriverUUID,
             application_type: 'driver',
-            how_many_drivers: 1
+            how_many_drivers: 1,
+            pr_user_id: pr_user_id
         };
-        prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+        // prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
         const dispatchDriverDOCID = `driver_${prospectData.phone_country_code}_${dispatchDriverUUID}_${dispatch_company_uuid}`;
         const docPath = qulifiedleadDocPath.replace(
             ":doc_uuid",
@@ -165,9 +166,10 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         driver_type_code: driver_type == 1 ? Driver_Type_Code.cliente_independiente : Driver_Type_Code.flotilleros,
         vehicle_type: vehicle_type,
         vehicle_type_id: vehicle_type_id,
-        driver_user_type_id: driver_type
+        driver_user_type_id: driver_type,
+        pr_user_id: pr_user_id
     };
-    vehicleData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+    // vehicleData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
     const dispatchDriverDOCID = `vehicle_${vehicleData.phone_country_code}_${vehicleUUID}_${dispatch_company_uuid ? dispatch_company_uuid : driver_uuid}`;
     const docPath = qulifiedleadDocPath.replace(
         ":doc_uuid",
