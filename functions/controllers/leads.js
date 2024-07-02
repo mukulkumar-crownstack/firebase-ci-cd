@@ -410,9 +410,9 @@ exports.postProspectQualify = async (req, res, next) => {
                 }
                 addLog(log1Path, log1Data);
                 const log2Path = `driver_lead/${leadID}/change_logs/${new Date().toISOString()}`;
-                const log2currentStatus = prospectData.lead_status.split("_").map((t) => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()).join(" ");
+                // const log2currentStatus = prospectData.lead_status.split("_").map((t) => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()).join(" ");
                 const log2Data = {
-                    currentStatus: log2currentStatus,
+                    currentStatus: "Pending",
                     logType: "qualified-lead",
                     created_by: created_by
                 }
