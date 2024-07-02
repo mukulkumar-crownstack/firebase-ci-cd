@@ -384,6 +384,7 @@ exports.postProspectQualify = async (req, res, next) => {
             const snapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
             if (snapshot.size === 0) {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
+                prospectData['application_status'] = 'in_progress';
                 if(prospectData.driver_type_code === 'cliente_independiente') {
                     prospectData['driver_user_uuid'] = prospectData.prospect_uuid;
                 } else {
