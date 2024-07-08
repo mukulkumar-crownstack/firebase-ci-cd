@@ -84,7 +84,7 @@ exports.postProspect = async (req, res, next) => {
             );
             const addRecord = await addFirestoreRecord(docPath, prospectData);
             if (addRecord && addRecord.status === 200) {
-                addleadLog(prospectData);
+                // addleadLog(prospectData);
                 res.status(200).json({
                     message: "added the truora data",
                     status: prospectData.status,
@@ -130,8 +130,8 @@ exports.postProspect = async (req, res, next) => {
                 data.status = "prospect";
                 const updateRecord = await updateFirestoreRecord(docPath, data);
                 if (updateRecord && updateRecord.status === 200) {
-                    const pData = { ...prospectData, status: "prospect", created_by: created_by };
-                    addleadLog(pData);
+                    // const pData = { ...prospectData, status: "prospect", created_by: created_by };
+                    // addleadLog(pData);
                     res.status(200).json({
                         message:
                             "prospect already present with update from rejected to prospect status in firestore",
@@ -307,10 +307,10 @@ exports.putProspect = async (req, res, next) => {
         // console.log(data);
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
-            if (status && status !== prospectData.status) {
-                const pData = { ...prospectData, status: status, created_by: created_by };
-                addleadLog(pData);
-            }
+            // if (status && status !== prospectData.status) {
+            //     const pData = { ...prospectData, status: status, created_by: created_by };
+            //     addleadLog(pData);
+            // }
             res.status(200).json({ message: "updated the truora data" });
         } else {
             res.status(500).json(updateRecord.error);
@@ -352,10 +352,10 @@ exports.putProspectStatus = async (req, res, next) => {
         const docPath = leadDocPath.replace(":prospect_uuid", prospectID);
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
-            if (status && status !== prospectData.status) {
-                const pData = { ...prospectData, status: status, created_by: created_by };
-                addleadLog(pData);
-            }
+            // if (status && status !== prospectData.status) {
+            //     const pData = { ...prospectData, status: status, created_by: created_by };
+            //     addleadLog(pData);
+            // }
             res.status(200).json({ message: "updated the truora data" });
         } else {
             res.status(500).json(updateRecord.error);
@@ -384,9 +384,13 @@ exports.postProspectQualify = async (req, res, next) => {
             const snapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
             if (snapshot.size === 0) {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
+                prospectData['application_status'] = 'in_progress';
+                prospectData['interview_status_code'] = "scheduled";
                 if(prospectData.driver_type_code === 'cliente_independiente') {
+                    prospectData['lead_status'] = "vehicle_info_check";
                     prospectData['driver_user_uuid'] = prospectData.prospect_uuid;
                 } else {
+                    prospectData.lead_status = "company_background_check";
                     prospectData['dispatch_driver_uuid'] = prospectData.prospect_uuid;
                 }
                 const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
@@ -402,27 +406,27 @@ exports.postProspectQualify = async (req, res, next) => {
                 } else {
                     res.status(500).json(addRecord.error);
                 }
-                const log1Path = `driver_lead/${leadID}/change_logs/${new Date().toISOString()}`;
-                const log1Data = {
-                    currentStatus: "Show Interest",
-                    logType: "qualified-lead",
-                    created_by: created_by
-                }
-                addLog(log1Path, log1Data);
-                const log2Path = `driver_lead/${leadID}/change_logs/${new Date().toISOString()}`;
-                const log2currentStatus = prospectData.lead_status.split("_").map((t) => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()).join(" ");
-                const log2Data = {
-                    currentStatus: log2currentStatus,
-                    logType: "qualified-lead",
-                    created_by: created_by
-                }
-                addLog(log2Path, log2Data)
+                // const log1Path = `driver_lead/${leadID}/change_logs/${new Date().toISOString()}`;
+                // const log1Data = {
+                //     currentStatus: "Show Interest",
+                //     logType: "qualified-lead",
+                //     created_by: created_by
+                // }
+                // addLog(log1Path, log1Data);
+                // const log2Path = `driver_lead/${leadID}/change_logs/${new Date().toISOString()}`;
+                // // const log2currentStatus = prospectData.lead_status.split("_").map((t) => t.charAt(0).toUpperCase() + t.substring(1).toLowerCase()).join(" ");
+                // const log2Data = {
+                //     currentStatus: "Pending",
+                //     logType: "qualified-lead",
+                //     created_by: created_by
+                // }
+                // addLog(log2Path, log2Data)
                 const updateLeadRecord = await updateFirestoreRecord(leadDocumentPath, data);
                 if (updateLeadRecord && updateLeadRecord.status === 200) {
-                    if (status && status !== prospectData.status) {
-                        const pData = { ...prospectData, status: status, created_by: created_by };
-                        addleadLog(pData);
-                    }
+                    // if (status && status !== prospectData.status) {
+                    //     const pData = { ...prospectData, status: status, created_by: created_by };
+                    //     addleadLog(pData);
+                    // }
                     res.status(200).json({ message: `added driver lead ${leadID} and updated the truora profile ${prospectID}`, });
                 } else {
                     res.status(500).json(updateLeadRecord.error);
@@ -454,39 +458,39 @@ const checkIfLeadAlreadyPresentAsQualified = (phoneNumber, phone_country_code) =
     return getFirestoreRecord(qulifiedleadCollectionPath, query);
 }
 
-const addleadLog = (prospectData) => {
-    const docPath = leadDocPath.replace(
-        ":prospect_uuid",
-        prospectData.prospect_uuid
-    );
-    const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
-    const logData = {
-        ...prospectData,
-        logType: "lead"
-    }
-    addLog(logPath, logData)
-}
+// const addleadLog = (prospectData) => {
+//     const docPath = leadDocPath.replace(
+//         ":prospect_uuid",
+//         prospectData.prospect_uuid
+//     );
+//     const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
+//     const logData = {
+//         ...prospectData,
+//         logType: "lead"
+//     }
+//     addLog(logPath, logData)
+// }
 
-const addLog = (logDocPath, data) => {
-    let logVal = null;
-    if (data.logType === 'lead') {
-        logVal = {
-            status: data.status,
-            updatedDateTime: new Date(),
-            truora_flow_id: data.truora_flow_id,
-            truora_flow_name: data.truora_flow_name,
-            action_by: data.created_by,
-            name: data.full_name,
-        };
-    } else {
-        logVal = {
-            previousStatus: "",
-            currentStatus: data.currentStatus,
-            updatedDateTime: new Date(),
-            updatedBy: data.created_by,
-            action: data.created_by,
-            notes: "",
-        };
-    }
-    addFirestoreRecord(logDocPath, logVal);
-}
+// const addLog = (logDocPath, data) => {
+//     let logVal = null;
+//     if (data.logType === 'lead') {
+//         logVal = {
+//             status: data.status,
+//             updatedDateTime: new Date(),
+//             truora_flow_id: data.truora_flow_id,
+//             truora_flow_name: data.truora_flow_name,
+//             action_by: data.created_by,
+//             name: data.full_name,
+//         };
+//     } else {
+//         logVal = {
+//             previousStatus: "",
+//             currentStatus: data.currentStatus,
+//             updatedDateTime: new Date(),
+//             updatedBy: data.created_by,
+//             action: data.created_by,
+//             notes: "",
+//         };
+//     }
+//     addFirestoreRecord(logDocPath, logVal);
+// }
