@@ -71,7 +71,8 @@ exports.postProspect = async (req, res, next) => {
                 referred_by_name: referred_by_name || null,
                 referred_by_phone: referred_by_phone || null,
                 source: sourceName,
-                pr_user_id: pr_user_id || null
+                documents_submitted_by: 'driver',
+                pr_user_id: 'unknown'
             };
             // if (created_by && created_by !== 'admin') {
             //     prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === 51);
@@ -249,7 +250,7 @@ exports.putProspect = async (req, res, next) => {
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
             source: source || prospectData.source,
             driver_type_code: driver_type_code || prospectData.driver_type_code || null,
-            pr_user_id: pr_user_id || prospectData.pr_user_id || null,
+            pr_user_id: pr_user_id || prospectData.pr_user_id || 'unknown',
         };
         if (pr_zone_code) {
             data.pr_zone_code = pr_zone_code;
