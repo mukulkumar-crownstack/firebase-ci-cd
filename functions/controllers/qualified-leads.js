@@ -147,7 +147,8 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         driver_type,
         vehicle_type,
         vehicle_type_id,
-        updated_by
+        updated_by,
+        license_plate
     } = req.body;
     const vehicleUUID = generateUUID();
     const vehicleData = {
@@ -169,7 +170,8 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         vehicle_type_id: vehicle_type_id,
         driver_user_type_id: driver_type,
         pr_user_id: pr_user_id,
-        assigned_datetime: Date.now()
+        assigned_datetime: Date.now(),
+        license_plate: license_plate
     };
     // vehicleData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
     const dispatchDriverDOCID = `vehicle_${vehicleData.phone_country_code}_${vehicleUUID}_${dispatch_company_uuid ? dispatch_company_uuid : driver_uuid}`;
