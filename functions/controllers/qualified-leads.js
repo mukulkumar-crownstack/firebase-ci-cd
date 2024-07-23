@@ -186,7 +186,7 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         const vehicleDocPath = `${docPath}/vehicle_info/${vehicleUUID}`;
         const data = {
             code: vehicleUUID,
-            license_plate: null,
+            license_plate: license_plate,
             manufacturer: null,
             model: null,
             name: 'Vehicle 1 Info',
