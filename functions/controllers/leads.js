@@ -71,7 +71,7 @@ exports.postProspect = async (req, res, next) => {
                 referred_by_name: referred_by_name || null,
                 referred_by_phone: referred_by_phone || null,
                 source: sourceName,
-                documents_submitted_by: 'driver',
+                // documents_submitted_by: 'driver',
                 pr_user_id: 'unknown'
             };
             // if (created_by && created_by !== 'admin') {
