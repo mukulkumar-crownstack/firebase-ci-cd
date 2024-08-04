@@ -39,6 +39,11 @@ exports.saveDocumentInAlgolia = async (snapshot) => {
                     record.created_datetime.toDate()
                 ).valueOf();
             }
+            if (record.assigned_datetime) {
+                record.assigned_datetime = new Date(
+                    record.assigned_datetime.toDate()
+                ).valueOf();
+            }
             if (record.update_datetime) {
                 record.update_datetime = new Date(
                     record.update_datetime.toDate()
