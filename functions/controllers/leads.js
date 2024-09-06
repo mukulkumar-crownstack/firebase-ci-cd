@@ -386,6 +386,7 @@ exports.postProspectQualify = async (req, res, next) => {
             if (snapshot.size === 0) {
                 prospectData['driver_uuid'] = prospectData.prospect_uuid;
                 prospectData['application_status'] = 'in_progress';
+                prospectData['application_type'] = prospectData?.driver_type_code;
                 prospectData['interview_status_code'] = "scheduled";
                 if(prospectData.driver_type_code === 'cliente_independiente') {
                     prospectData['lead_status'] = "vehicle_info_check";
