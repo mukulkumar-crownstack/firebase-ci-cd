@@ -119,12 +119,30 @@ exports.postProspect = async (req, res, next) => {
     const addQualifiedLeadRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
 
     if (addQualifiedLeadRecord && addQualifiedLeadRecord.status === 200) {
-        res.status(200).json({
-            message: "Prospect and Qualified Lead added successfully.",
-            status: prospectData.status,
-            is_avalabile: true,
-            prospect_uuid: prospectData.prospect_uuid
-        });
+        // Call postProspectQualify to update additional information
+        try {
+            // Prepare request for postProspectQualify
+            const qualifyReq = {
+                body: {
+                    status: 'qualified', // Update status as needed
+                    phone: phone,
+                    created_by: created_by
+                }
+            };
+
+            // Invoke postProspectQualify
+            await exports.postProspectQualify(qualifyReq, res, next);
+
+            res.status(200).json({
+                message: "Prospect and Qualified Lead added successfully.",
+                status: prospectData.status,
+                is_avalabile: true,
+                prospect_uuid: prospectData.prospect_uuid
+            });
+        } catch (err) {
+            console.error("Error qualifying the lead:", err);
+            res.status(500).json({ message: "Prospect created but failed to qualify lead.", error: err });
+        }
     } else {
         res.status(500).json(addQualifiedLeadRecord.error);
     }
