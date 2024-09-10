@@ -220,7 +220,7 @@ exports.putProspect = async (req, res, next) => {
 };
 
 exports.putProspectStatus = async (req, res, next) => {
-    const { status, phone, is_fleet, rejection_reason, created_by = 'user' } = req.body;
+    const { status, phone, is_fleet, created_by = 'user' } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
 
     const data = {
@@ -234,10 +234,6 @@ exports.putProspectStatus = async (req, res, next) => {
         data.driver_type_code = "flotilleros";
     } else {
         data.driver_type_code = "cliente_independiente";
-    }
-
-    if (status === "rejected") {
-        data["rejection_reason"] = rejection_reason ? +rejection_reason : 7;
     }
 
     if (status === "pre_lead") {
@@ -254,12 +250,20 @@ exports.putProspectStatus = async (req, res, next) => {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const docPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
-        const updateRecord = await updateFirestoreRecord(docPath, data);
-
-        if (updateRecord && updateRecord.status === 200) {
-            res.status(200).json({ message: "Updated the prospect status successfully." });
+        if (status === "rejected") {
+            const deleteRecord = await deleteFirestoreRecord(docPath);
+            if (deleteRecord && deleteRecord.status === 200) {
+                res.status(200).json({ message: "Prospect rejected and deleted successfully." });
+            } else {
+                res.status(500).json(deleteRecord.error);
+            }
         } else {
-            res.status(500).json(updateRecord.error);
+            const updateRecord = await updateFirestoreRecord(docPath, data);
+            if (updateRecord && updateRecord.status === 200) {
+                res.status(200).json({ message: "Updated the prospect status successfully." });
+            } else {
+                res.status(500).json(updateRecord.error);
+            }
         }
     } else {
         res.status(404).json({ message: "Prospect not found in qualified leads collection." });

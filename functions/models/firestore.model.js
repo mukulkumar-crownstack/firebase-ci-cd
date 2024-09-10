@@ -29,3 +29,13 @@ exports.updateFirestoreRecord = (docPath, data) => {
         return { status: 500, error: err };
     });
 };
+
+exports.deleteFirestoreRecord = async (docPath) => {
+    try {
+        await admin.firestore().doc(docPath).delete();
+        return { status: 200, message: 'Document deleted successfully.' };
+    } catch (error) {
+        console.error('Error deleting document:', error);
+        return { status: 500, error: error.message };
+    }
+};
