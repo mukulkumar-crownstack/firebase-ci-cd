@@ -149,7 +149,7 @@ exports.manageQualifiedLead = async (req, res, next) => {
             res.status(500).json(addRecord.error);
         }
     } else {
-        res.status(200).json({
+        res.status(409).json({ 
             message: `Lead already present with phone: +52 ${phoneNumber}`,
             status: 'qualified',
             is_available: false,
