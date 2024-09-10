@@ -2,7 +2,7 @@ const admin = require("firebase-admin");
 const moment = require("moment");
 
 const helper_functions = require("../utils/helper.functions");
-const { getFirestoreRecord, getFirestoreDocument, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
+const { getFirestoreRecord, getFirestoreDocument, addFirestoreRecord, updateFirestoreRecord, deleteFirestoreRecord } = require("../models/firestore.model");
 const { sourceData, interviewers } = require("../utils/constants");
 
 const leadCollectionPath = "driver_lead/leads/prospects";
