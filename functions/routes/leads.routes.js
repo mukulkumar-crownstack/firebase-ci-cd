@@ -2,12 +2,12 @@ const express = require('express');
 
 const router = express.Router();
 
-const { getProspectByPhone, postProspect, putProspect, putProspectStatus, postProspectQualify } = require('../controllers/leads');
+const { getQualifiedLeadByPhone, postQualifiedLead, putQualifiedLead, putQualifiedLeadStatus, manageQualifiedLead } = require('../controllers/leads');
 
-router.get('/prospects/:phone', getProspectByPhone);
-router.post('/prospects/add', postProspect);
-router.put('/prospects/add', putProspect);
-router.put('/prospects/update', putProspectStatus);
-router.post('/prospects/qualify', postProspectQualify);
+router.get('/prospects/:phone', getQualifiedLeadByPhone);
+router.post('/prospects/add', manageQualifiedLead);
+router.put('/prospects/add', putQualifiedLead);
+router.put('/prospects/update', putQualifiedLeadStatus);
+router.post('/prospects/qualify', manageQualifiedLead);
 
 module.exports = router;
