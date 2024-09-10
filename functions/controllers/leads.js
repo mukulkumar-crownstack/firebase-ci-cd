@@ -50,6 +50,8 @@ exports.manageQualifiedLead = async (req, res, next) => {
         vehicle_capacity,
         calculate_vehicle_type,
         vehicle_subcategory,
+        vehicle_subcategory_codes,
+        vehicle_type_codes,
         email,
         session_time,
         status,
@@ -59,7 +61,7 @@ exports.manageQualifiedLead = async (req, res, next) => {
         pr_zone,
         pr_market,
         pr_zone_code,
-        pr_operation_centres,
+        pr_operation_centres
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -84,6 +86,24 @@ exports.manageQualifiedLead = async (req, res, next) => {
             pr_user_id: pr_user_id || 'unknown',
             last_status_update: new Date(),
             application_id: `PRD${Math.random().toString().substring(2, 9)}`,
+            vehicles,
+            vehicle_configuration,
+            vehicle_capacity,
+            calculate_vehicle_type,
+            vehicle_subcategory,
+            vehicle_subcategory_codes,
+            vehicle_type_codes,
+            email,
+            session_time,
+            status: "qualified",
+            vehicle_year,
+            meeting_type,
+            driver_type_code: driver_type_code || "cliente_independiente",
+            application_type: driver_type_code || "cliente_independiente",
+            pr_zone,
+            pr_market,
+            pr_zone_code,
+            pr_operation_centres,
         };
 
         if (truora_flow_id) {
@@ -106,6 +126,8 @@ exports.manageQualifiedLead = async (req, res, next) => {
                 vehicle_capacity,
                 calculate_vehicle_type,
                 vehicle_subcategory,
+                vehicle_subcategory_codes,
+                vehicle_type_codes,
                 email,
                 session_time,
                 status: "qualified",
@@ -124,7 +146,7 @@ exports.manageQualifiedLead = async (req, res, next) => {
         qualifiedLeadData['interview_status_code'] = "scheduled";
         qualifiedLeadData['driver_uuid'] = qualifiedLeadData.prospect_uuid;
 
-        if(qualifiedLeadData.driver_type_code === 'cliente_independiente') {
+        if (qualifiedLeadData.driver_type_code === 'cliente_independiente') {
             qualifiedLeadData['lead_status'] = "vehicle_info_check";
             qualifiedLeadData['driver_user_uuid'] = qualifiedLeadData.prospect_uuid;
         } else {
