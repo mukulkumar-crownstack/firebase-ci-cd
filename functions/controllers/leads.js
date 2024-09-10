@@ -290,51 +290,86 @@ exports.postProspectQualify = async (req, res, next) => {
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const qualifiedLeadDocumentPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
-
+    
         if (prospectData) {
-            const existingQualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(phoneNumber, 'mx');
-            
-            if (existingQualifiedLeadSnapshot.size === 0) {
-                prospectData['driver_uuid'] = prospectData.prospect_uuid;
-                prospectData['application_status'] = 'in_progress';
-                prospectData['application_type'] = prospectData?.driver_type_code;
-                prospectData['interview_status_code'] = "scheduled";
-
-                if (prospectData.driver_type_code === 'cliente_independiente') {
-                    prospectData['lead_status'] = "vehicle_info_check";
-                    prospectData['driver_user_uuid'] = prospectData.prospect_uuid;
-                } else {
-                    prospectData.lead_status = "company_background_check";
-                    prospectData['dispatch_driver_uuid'] = prospectData.prospect_uuid;
-                }
-
-                const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
-                const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
-
-                const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
-                if (addRecord && addRecord.status === 200) {
-                    const updateLeadRecord = await updateFirestoreRecord(qualifiedLeadDocumentPath, data);
-                    if (updateLeadRecord && updateLeadRecord.status === 200) {
-                        res.status(200).json({ message: `Added driver lead ${leadID} and updated the truora profile ${prospectID}` });
-                    } else {
-                        res.status(500).json(updateLeadRecord.error);
-                    }
-                } else {
-                    res.status(500).json(addRecord.error);
-                }
+            prospectData['driver_uuid'] = prospectData.prospect_uuid;
+            prospectData['application_status'] = 'in_progress';
+            prospectData['application_type'] = prospectData?.driver_type_code;
+            prospectData['interview_status_code'] = "scheduled";
+    
+            if (prospectData.driver_type_code === 'cliente_independiente') {
+                prospectData['lead_status'] = "vehicle_info_check";
+                prospectData['driver_user_uuid'] = prospectData.prospect_uuid;
             } else {
-                const updateRecord = await updateFirestoreRecord(qualifiedLeadDocumentPath, data);
-                if (updateRecord && updateRecord.status === 200) {
-                    res.status(400).json({
-                        message: `Lead already present with phone: ${prospectData.phone_country_code}${phoneNumber}`,
-                    });
-                } else {
-                    res.status(500).json(updateRecord.error);
-                }
+                prospectData.lead_status = "company_background_check";
+                prospectData['dispatch_driver_uuid'] = prospectData.prospect_uuid;
+            }
+    
+            const updateLeadRecord = await updateFirestoreRecord(qualifiedLeadDocumentPath, prospectData);
+            if (updateLeadRecord && updateLeadRecord.status === 200) {
+                res.status(200).json({ message: `Updated the qualified lead ${prospectID}` });
+            } else {
+                res.status(500).json(updateLeadRecord.error);
             }
         }
     } else {
-        res.status(404).json({ message: "Prospect not found in qualified leads collection." });
+        const {
+            phone,
+            full_name,
+            truora_flow_id,
+            truora_flow_name,
+            referred_by_name,
+            referred_by_phone,
+            created_by = "user",
+            user_language,
+            source,
+            pr_user_id
+        } = req.body;
+    
+        let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
+        let sourceName = sourceData.find(s => s.code === source)?.code || 'facebook';
+    
+        const prospectData = {
+            full_name: full_name,
+            company_name: full_name,
+            phone: phoneNumber,
+            prospect_uuid: helper_functions.generateUUID(),
+            phone_country_code: "mx",
+            status: "prospect",
+            created_datetime: new Date(),
+            update_datetime: new Date(),
+            user_language: user_language || "es",
+            created_by: created_by,
+            truora_flow_id: truora_flow_id || null,
+            truora_flow_name: truora_flow_name || null,
+            last_status_update: new Date(),
+            application_id: `PRD${Math.random().toString().substring(2, 9)}`,
+            referred_by_name: referred_by_name || null,
+            referred_by_phone: referred_by_phone || null,
+            source: sourceName,
+            pr_user_id: pr_user_id || 'unknown',
+            driver_type_code: prospectData.driver_type_code,
+            application_type: prospectData.driver_type_code,
+            application_status: 'in_progress',
+            lead_status: "vehicle_info_check",
+            interview_status_code: "scheduled",
+            driver_user_uuid: helper_functions.generateUUID(),
+        };
+    
+        const leadID = `${prospectData.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
+        const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
+    
+        const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, prospectData);
+        if (addRecord && addRecord.status === 200) {
+            res.status(200).json({
+                message: "Prospect added successfully to qualified leads",
+                status: prospectData.status,
+                is_available: true,
+                prospect_uuid: prospectData.prospect_uuid
+            });
+        } else {
+            res.status(500).json(addRecord.error);
+        }
     }
 };
 
