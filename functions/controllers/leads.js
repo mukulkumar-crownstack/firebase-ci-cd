@@ -55,7 +55,7 @@ exports.postProspect = async (req, res, next) => {
             phone: phoneNumber,
             prospect_uuid: helper_functions.generateUUID(),
             phone_country_code: "mx",
-            status: "qualified",
+            status: "prospect",
             created_datetime: new Date(),
             update_datetime: new Date(),
             user_language: user_language || "es",
