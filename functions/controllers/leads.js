@@ -159,6 +159,7 @@ exports.putProspect = async (req, res, next) => {
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
             source: source || prospectData.source,
             driver_type_code: driver_type_code || prospectData.driver_type_code || null,
+            application_type: driver_type_code || prospectData.driver_type_code || null,
             pr_user_id: pr_user_id || prospectData.pr_user_id || 'unknown',
         };
 
