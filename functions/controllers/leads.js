@@ -227,7 +227,7 @@ exports.addQualifiedLead = async (req, res, next) => {
             } else if (prospectData.status === "lead") {
                 res.status(201).json({
                     message: "Lead already present with lead status",
-                    status: prospectData.status,
+                    status: 'qualified',
                     is_avalabile: false
                 });
             } else {
