@@ -97,6 +97,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                 vehicle_subcategory,
                 vehicle_subcategory_codes,
                 vehicle_type_codes,
+                assigned_datetime,
                 email,
                 session_time,
                 vehicle_year,
@@ -123,6 +124,8 @@ exports.addQualifiedLead = async (req, res, next) => {
                     driver_user_uuid: helper_functions.generateUUID(),
                 };
             } else {
+                const currentDateTime = new Date();
+                currentDateTime.setSeconds(currentDateTime.getSeconds() + 3);
                 qualifiedLeadData = {
                     ...qualifiedLeadData,
                     vehicles,
@@ -134,7 +137,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                     vehicle_type_codes,
                     email,
                     session_time,
-                    assigned_datetime: assigned_datetime,
+                    assigned_datetime: currentDateTime,
                     status: "qualified",
                     vehicle_year,
                     meeting_type,
@@ -170,6 +173,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                 res.status(200).json({
                     message: "Lead added successfully to qualified leads",
                     status: qualifiedLeadData.status,
+                    qualifiedLeadData: qualifiedLeadData,
                     is_available: true,
                     prospect_uuid: qualifiedLeadData.prospect_uuid,
                 });
