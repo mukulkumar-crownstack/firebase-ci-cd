@@ -59,7 +59,8 @@ exports.addQualifiedLead = async (req, res, next) => {
         pr_zone,
         pr_market,
         pr_zone_code,
-        pr_operation_centres
+        pr_operation_centres,
+        assigned_datetime
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -133,6 +134,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                     vehicle_type_codes,
                     email,
                     session_time,
+                    assigned_datetime: assigned_datetime,
                     status: "qualified",
                     vehicle_year,
                     meeting_type,
