@@ -302,9 +302,10 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
-        const docPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
+        const oldDocPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
         let data = {
+            ...prospectData,
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes: vehicleCodes.length > 0 ? vehicleCodes : prospectData.vehicle_type_codes || null,
             vehicle_subcategory_codes: vehicleSubcategoryCode.length > 0 ? vehicleSubcategoryCode : prospectData.vehicle_subcategory_codes || null,
@@ -323,15 +324,17 @@ exports.updateQualifiedLead = async (req, res, next) => {
             referred_by_name: referred_by_name || prospectData.referred_by_name || null,
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
             source: source || prospectData.source,
-            driver_type_code: driver_type_code || prospectData.driver_type_code || null,
-            application_type: driver_type_code || prospectData.driver_type_code || null,
             pr_user_id: pr_user_id || prospectData.pr_user_id || 'unknown',
+            pr_zone_code: pr_zone_code || prospectData.pr_zone_code || null,
+            pr_market: pr_market || prospectData.pr_market || null,
+            pr_zone: pr_zone || prospectData.pr_zone || null,
+            pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
         };
 
-        if (pr_zone_code) data.pr_zone_code = pr_zone_code;
-        if (pr_market) data.pr_market = pr_market;
-        if (pr_zone) data.pr_zone = pr_zone;
-        if (pr_operation_centres) data.pr_operation_centres = pr_operation_centres;
+        if (driver_type_code) {
+            data.driver_type_code = driver_type_code;
+            data.application_type = driver_type_code;
+        }
 
         if (calculate_vehicle_type) {
             const vehicleTypesCodes = await getFirestoreDocument(vehicleTypesMetadata);
@@ -359,25 +362,17 @@ exports.updateQualifiedLead = async (req, res, next) => {
             data["session_timestamp"] = moment.utc(t).format();
         }
 
-        if (prospectData.driver_type_code !== "cliente_independiente") {
-            data["company_name"] = data.full_name;
-            data.lead_status = "company_background_check";
-        }
+        const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
 
-        if (status && status !== prospectData.status) {
-            data["last_status_update"] = new Date();
-        }
+        try {
+            await addFirestoreRecord(newDocPath, data);
 
-        if (prospectData.source === 'referidos' && source && source !== prospectData.source) {
-            data.referred_by_name = '';
-            data.referred_by_phone = '';
-        }
+            await deleteFirestoreRecord(oldDocPath);
 
-        const updateRecord = await updateFirestoreRecord(docPath, data);
-        if (updateRecord && updateRecord.status === 200) {
-            res.status(200).json({ message: "updated the truora data" });
-        } else {
-            res.status(500).json(updateRecord.error);
+            res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
+        } catch (error) {
+            console.error("Error during document update:", error);
+            res.status(500).json({ error: "An error occurred while updating the document." });
         }
     } else {
         res.status(404).json({ message: "Lead not found in qualified leads collection." });
