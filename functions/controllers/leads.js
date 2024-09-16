@@ -315,7 +315,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             session_time: null,
             session_timestamp: null,
             update_datetime: new Date(),
-            application_status: "in_progress",
+            application_status: prospectData.application_status || "in_progress",
             lead_status: "vehicle_info_check",
             interview_status_code: "scheduled",
             status: status || prospectData.status,
