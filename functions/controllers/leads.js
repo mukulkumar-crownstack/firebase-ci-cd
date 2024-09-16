@@ -291,8 +291,10 @@ exports.updateQualifiedLead = async (req, res, next) => {
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
-    let vehicleCodes = vehicles ? vehicles.split(',') : [];
-    let vehicleSubcategoryCode = vehicle_subcategory ? vehicle_subcategory.split(',') : [];
+
+    // Generate the document ID dynamically
+    const documentName = `${driver_type_code || "cliente_independiente"}_mx_${phoneNumber}`;
+    const docPath = qulifiedleadCollectionPath + `/${documentName}`;
 
     const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
         key: "phone",
@@ -302,21 +304,17 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
-        const docPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
         let data = {
             full_name: full_name || prospectData.full_name,
-            vehicle_type_codes: vehicleCodes.length > 0 ? vehicleCodes : prospectData.vehicle_type_codes || null,
-            vehicle_subcategory_codes: vehicleSubcategoryCode.length > 0 ? vehicleSubcategoryCode : prospectData.vehicle_subcategory_codes || null,
+            vehicle_type_codes: vehicles ? vehicles.split(',') : prospectData.vehicle_type_codes || null,
+            vehicle_subcategory_codes: vehicle_subcategory ? vehicle_subcategory.split(',') : prospectData.vehicle_subcategory_codes || null,
             vehicle_configuration: vehicle_configuration || prospectData.vehicle_configuration || null,
             vehicle_capacity: vehicle_capacity || prospectData.vehicle_capacity || null,
-            email: email || "",
-            session_time: null,
-            session_timestamp: null,
+            email: email || prospectData.email || "",
             update_datetime: new Date(),
             application_status: "in_progress",
             lead_status: "vehicle_info_check",
-            interview_status_code: "scheduled",
             status: status || prospectData.status,
             meeting_type: meeting_type || prospectData.meeting_type || null,
             vehicle_year: vehicle_year || prospectData.vehicle_year || null,
@@ -326,56 +324,16 @@ exports.updateQualifiedLead = async (req, res, next) => {
             driver_type_code: driver_type_code || prospectData.driver_type_code || null,
             application_type: driver_type_code || prospectData.driver_type_code || null,
             pr_user_id: pr_user_id || prospectData.pr_user_id || 'unknown',
+            pr_zone,
+            pr_market,
+            pr_zone_code,
+            pr_operation_centres,
         };
 
-        if (pr_zone_code) data.pr_zone_code = pr_zone_code;
-        if (pr_market) data.pr_market = pr_market;
-        if (pr_zone) data.pr_zone = pr_zone;
-        if (pr_operation_centres) data.pr_operation_centres = pr_operation_centres;
-
-        if (calculate_vehicle_type) {
-            const vehicleTypesCodes = await getFirestoreDocument(vehicleTypesMetadata);
-            const vehicleCategory = vehicleTypesCodes[data.vehicle_type_codes[0]];
-            if (vehicleCategory) {
-                const vehicleConfig = vehicleCategory[data.vehicle_configuration];
-                if (vehicleConfig && data.vehicle_capacity) {
-                    const unit = vehicleConfig.units.find(u => u.capacity.includes(data.vehicle_capacity));
-                    if (unit) {
-                        data.vehicle_subcategory_codes = [unit['vehicle_type_codes']];
-                    }
-                }
-            }
-        }
-
-        if (session_time) {
-            const t = moment()
-                .add(1, "days")
-                .hours(+session_time.split(":")[0])
-                .minutes(0)
-                .seconds(0)
-                .format();
-            data["session_time"] = session_time.split(":")[0];
-            data["session_date"] = new Date(t);
-            data["session_timestamp"] = moment.utc(t).format();
-        }
-
-        if (prospectData.driver_type_code !== "cliente_independiente") {
-            data["company_name"] = data.full_name;
-            data.lead_status = "company_background_check";
-        }
-
-        if (status && status !== prospectData.status) {
-            data["last_status_update"] = new Date();
-        }
-
-        if (prospectData.source === 'referidos' && source && source !== prospectData.source) {
-            data.referred_by_name = '';
-            data.referred_by_phone = '';
-        }
-
+        // Update the Firestore record with new data
         const updateRecord = await updateFirestoreRecord(docPath, data);
         if (updateRecord && updateRecord.status === 200) {
-            res.status(200).json({ message: "updated the truora data" });
+            res.status(200).json({ message: "Qualified lead updated successfully" });
         } else {
             res.status(500).json(updateRecord.error);
         }
