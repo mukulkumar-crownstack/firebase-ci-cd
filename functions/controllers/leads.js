@@ -283,7 +283,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
         referred_by_phone,
         source,
         pr_user_id,
-        driver_type_code,
+        driver_type_code, // This is important for the logic
         pr_zone,
         pr_market,
         pr_zone_code,
@@ -291,10 +291,8 @@ exports.updateQualifiedLead = async (req, res, next) => {
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
-
-    // Generate the current document ID based on the incoming driver_type_code
-    const newDocumentName = `${driver_type_code || "cliente_independiente"}_mx_${phoneNumber}`;
-    const newDocPath = qulifiedleadCollectionPath + `/${newDocumentName}`;
+    let vehicleCodes = vehicles ? vehicles.split(',') : [];
+    let vehicleSubcategoryCode = vehicle_subcategory ? vehicle_subcategory.split(',') : [];
 
     const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
         key: "phone",
@@ -304,21 +302,21 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
-
-        // Check if driver_type_code is changing
-        const oldDocumentName = `${prospectData.driver_type_code || "cliente_independiente"}_mx_${phoneNumber}`;
-        const oldDocPath = qulifiedleadCollectionPath + `/${oldDocumentName}`;
-
+        const oldDocPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
+        
         let data = {
             full_name: full_name || prospectData.full_name,
-            vehicle_type_codes: vehicles ? vehicles.split(',') : prospectData.vehicle_type_codes || null,
-            vehicle_subcategory_codes: vehicle_subcategory ? vehicle_subcategory.split(',') : prospectData.vehicle_subcategory_codes || null,
+            vehicle_type_codes: vehicleCodes.length > 0 ? vehicleCodes : prospectData.vehicle_type_codes || null,
+            vehicle_subcategory_codes: vehicleSubcategoryCode.length > 0 ? vehicleSubcategoryCode : prospectData.vehicle_subcategory_codes || null,
             vehicle_configuration: vehicle_configuration || prospectData.vehicle_configuration || null,
             vehicle_capacity: vehicle_capacity || prospectData.vehicle_capacity || null,
-            email: email || prospectData.email || "",
+            email: email || "",
+            session_time: null,
+            session_timestamp: null,
             update_datetime: new Date(),
             application_status: "in_progress",
             lead_status: "vehicle_info_check",
+            interview_status_code: "scheduled",
             status: status || prospectData.status,
             meeting_type: meeting_type || prospectData.meeting_type || null,
             vehicle_year: vehicle_year || prospectData.vehicle_year || null,
@@ -326,34 +324,50 @@ exports.updateQualifiedLead = async (req, res, next) => {
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
             source: source || prospectData.source,
             driver_type_code: driver_type_code || prospectData.driver_type_code || null,
-            application_type: driver_type_code || prospectData.application_type || null, // Update application_type with driver_type_code
+            application_type: driver_type_code || prospectData.driver_type_code || null,
             pr_user_id: pr_user_id || prospectData.pr_user_id || 'unknown',
-            pr_zone,
-            pr_market,
-            pr_zone_code,
-            pr_operation_centres,
         };
 
-        // If the driver_type_code has changed, delete the old document and create a new one
-        if (newDocumentName !== oldDocumentName) {
-            // Create new document with updated document ID
-            const addNewRecord = await addFirestoreRecord(newDocPath, data);
-            if (addNewRecord && addNewRecord.status === 200) {
-                // If the new document is added, delete the old document
-                await deleteFirestoreRecord(oldDocPath);
+        // Add zone and market info
+        if (pr_zone_code) data.pr_zone_code = pr_zone_code;
+        if (pr_market) data.pr_market = pr_market;
+        if (pr_zone) data.pr_zone = pr_zone;
+        if (pr_operation_centres) data.pr_operation_centres = pr_operation_centres;
 
-                res.status(200).json({
-                    message: "Lead updated successfully with new document ID",
-                    status: data.status,
-                });
+        // If driver_type_code is updated, create new document
+        if (driver_type_code && driver_type_code !== prospectData.driver_type_code) {
+            const newDocID = `${driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`;
+            const newDocPath = qulifiedleadDocPath.replace(':lead_uuid', newDocID);
+            
+            // Create a new document with updated driver_type_code
+            const createNewRecord = await addFirestoreRecord(newDocPath, data);
+            
+            if (createNewRecord && createNewRecord.status === 200) {
+                // After successfully creating the new record, delete the old one
+                const deleteOldRecord = await deleteFirestoreRecord(oldDocPath);
+                
+                if (deleteOldRecord && deleteOldRecord.status === 200) {
+                    res.status(200).json({ 
+                        message: "Lead updated with new driver_type_code and old document deleted.",
+                        status: data.status
+                    });
+                } else {
+                    res.status(500).json({ 
+                        message: "Failed to delete old document after creating new one.",
+                        error: deleteOldRecord.error
+                    });
+                }
             } else {
-                res.status(500).json(addNewRecord.error);
+                res.status(500).json({
+                    message: "Failed to create new document with updated driver_type_code.",
+                    error: createNewRecord.error
+                });
             }
         } else {
-            // If driver_type_code hasn't changed, just update the existing document
+            // Update the existing record without creating a new one
             const updateRecord = await updateFirestoreRecord(oldDocPath, data);
             if (updateRecord && updateRecord.status === 200) {
-                res.status(200).json({ message: "Qualified lead updated successfully" });
+                res.status(200).json({ message: "Lead updated successfully." });
             } else {
                 res.status(500).json(updateRecord.error);
             }
