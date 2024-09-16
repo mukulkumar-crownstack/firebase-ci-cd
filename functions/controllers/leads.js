@@ -292,9 +292,9 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
 
-    // Generate the document ID dynamically
-    const documentName = `${driver_type_code || "cliente_independiente"}_mx_${phoneNumber}`;
-    const docPath = qulifiedleadCollectionPath + `/${documentName}`;
+    // Generate the current document ID based on the incoming driver_type_code
+    const newDocumentName = `${driver_type_code || "cliente_independiente"}_mx_${phoneNumber}`;
+    const newDocPath = qulifiedleadCollectionPath + `/${newDocumentName}`;
 
     const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
         key: "phone",
@@ -304,6 +304,10 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
+
+        // Check if driver_type_code is changing
+        const oldDocumentName = `${prospectData.driver_type_code || "cliente_independiente"}_mx_${phoneNumber}`;
+        const oldDocPath = qulifiedleadCollectionPath + `/${oldDocumentName}`;
 
         let data = {
             full_name: full_name || prospectData.full_name,
@@ -322,7 +326,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             referred_by_phone: referred_by_phone || prospectData.referred_by_phone || null,
             source: source || prospectData.source,
             driver_type_code: driver_type_code || prospectData.driver_type_code || null,
-            application_type: driver_type_code || prospectData.driver_type_code || null,
+            application_type: driver_type_code || prospectData.application_type || null, // Update application_type with driver_type_code
             pr_user_id: pr_user_id || prospectData.pr_user_id || 'unknown',
             pr_zone,
             pr_market,
@@ -330,12 +334,29 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_operation_centres,
         };
 
-        // Update the Firestore record with new data
-        const updateRecord = await updateFirestoreRecord(docPath, data);
-        if (updateRecord && updateRecord.status === 200) {
-            res.status(200).json({ message: "Qualified lead updated successfully" });
+        // If the driver_type_code has changed, delete the old document and create a new one
+        if (newDocumentName !== oldDocumentName) {
+            // Create new document with updated document ID
+            const addNewRecord = await addFirestoreRecord(newDocPath, data);
+            if (addNewRecord && addNewRecord.status === 200) {
+                // If the new document is added, delete the old document
+                await deleteFirestoreRecord(oldDocPath);
+
+                res.status(200).json({
+                    message: "Lead updated successfully with new document ID",
+                    status: data.status,
+                });
+            } else {
+                res.status(500).json(addNewRecord.error);
+            }
         } else {
-            res.status(500).json(updateRecord.error);
+            // If driver_type_code hasn't changed, just update the existing document
+            const updateRecord = await updateFirestoreRecord(oldDocPath, data);
+            if (updateRecord && updateRecord.status === 200) {
+                res.status(200).json({ message: "Qualified lead updated successfully" });
+            } else {
+                res.status(500).json(updateRecord.error);
+            }
         }
     } else {
         res.status(404).json({ message: "Lead not found in qualified leads collection." });
