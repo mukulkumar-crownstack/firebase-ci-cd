@@ -20,39 +20,61 @@ exports.postMigrationsFirestoreData = async (req, res, next) => {
 
 exports.postMigrationsData = async (req, res, next) => {
     console.log("start");
-    const documentSnapshotArray = await admin.firestore().collection('driver_lead/leads/prospects').get();
+
+    const prospectsCollectionRef = admin.firestore().collection('driver_lead/leads/prospects');
+    const driverLeadCollectionRef = admin.firestore().collection('driver_lead');
+    
+    const documentSnapshotArray = await prospectsCollectionRef.where('status', '==', 'rejected').get();
+    
     const batchArray = [];
     batchArray.push(admin.firestore().batch());
     let operationCounter = 0;
     let batchIndex = 0;
     let counter = 0;
-    documentSnapshotArray.forEach((documentSnapshot) => {
-        const documentData = documentSnapshot.data();
+
+    for (const documentSnapshot of documentSnapshotArray.docs) {
+        let documentData = documentSnapshot.data();
         counter++;
-        // update document data here...
 
-        // if(!documentData['application_type'] && documentData.driver_type_code) {
-        //     documentData['application_type'] = documentData.driver_type_code;
-        // }
+        const existingLeadQuerySnapshot = await driverLeadCollectionRef
+            .where('phone', '==', documentData?.phone)
+            .get();
 
-        // if(documentData['documents_submitted_by']) {
-        //     delete documentData['documents_submitted_by'];
-        // }
+        if (existingLeadQuerySnapshot.empty) {
+            documentData['status'] = 'rejected';
+            documentData['application_status'] = 'without_unit';
+            documentData['update_datetime'] = new Date();
+            documentData['pr_user_id'] = 'unknown';
+            if(!documentData?.driver_type_code) {
+                documentData['driver_type_code'] = 'cliente_independiente';
+            }
+            if(!documentData?.application_type) {
+                documentData['application_type'] = documentData?.driver_type_code;
+            }
 
-        batchArray[batchIndex].update(documentSnapshot.ref, documentData);
-        operationCounter++;
+            const newDocId = `${documentData.driver_type_code}_${documentData.phone_country_code}_${documentData.phone}`;
+            const newDocRef = driverLeadCollectionRef.doc(newDocId);
+            batchArray[batchIndex].set(newDocRef, documentData);
+            operationCounter++;
 
-        if (operationCounter === 499) {
-            batchArray.push(admin.firestore().batch());
-            batchIndex++;
-            operationCounter = 0;
-            console.log("operations.....", counter);
+            console.log('Migrating document:', documentData?.phone);
+
+            if (operationCounter === 499) {
+                batchArray.push(admin.firestore().batch());
+                batchIndex++;
+                operationCounter = 0;
+                console.log("operations.....", counter);
+            }
         }
-    });
+    }
 
-    batchArray.forEach(async batch => { await batch.commit(); console.log("batch commiting.....", counter); });
-    res.status(200).json({ message: "Done fixing data" });
-}
+    // for (const batch of batchArray) {
+    //     await batch.commit();
+    //     console.log("Batch committed.");
+    // }
+
+    res.status(200).json({ message: "Done migrating data" });
+};
 
 exports.sendCollectionToAlgolia = async (req, res) => {
     // const algoliaRecords = [];
