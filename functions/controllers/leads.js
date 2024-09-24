@@ -265,7 +265,7 @@ exports.addQualifiedLead = async (req, res, next) => {
 };
 
 exports.updateQualifiedLead = async (req, res, next) => {
-    let {
+    const {
         full_name,
         vehicles,
         vehicle_configuration,
@@ -286,15 +286,13 @@ exports.updateQualifiedLead = async (req, res, next) => {
         pr_zone,
         pr_market,
         pr_zone_code,
-        pr_operation_centres,
-        accepted_terms_condition
+        pr_operation_centres
     } = req.body;
-
-    console.log('req.body', req.body.accepted_terms_condition);
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = vehicles ? vehicles.split(',') : [];
     let vehicleSubcategoryCode = vehicle_subcategory ? vehicle_subcategory.split(',') : [];
+    let accepted_terms_condition = true
 
     const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
         key: "phone",
@@ -306,17 +304,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const oldDocPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
-        if (!driver_type_code) {
-            driver_type_code = prospectData['driver_type_code'];
-        } else {
-            driver_type_code = driver_type_code
-        }
-
-        const removeUndefined = (obj) => {
-            return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
-        };
-
-        let data = removeUndefined({
+        let data = {
             ...prospectData,
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes: vehicleCodes.length > 0 ? vehicleCodes : prospectData.vehicle_type_codes || null,
@@ -327,7 +315,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             session_time: null,
             session_timestamp: null,
             update_datetime: new Date(),
-            application_status: prospectData.application_status,
+            application_status: prospectData.application_status || "in_progress",
             lead_status: "vehicle_info_check",
             interview_status_code: "scheduled",
             status: status || prospectData.status,
@@ -342,11 +330,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_zone: pr_zone || prospectData.pr_zone || null,
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
             accepted_terms_condition: accepted_terms_condition
-        });
-
-        if(accepted_terms_condition) {
-            data.accepted_terms_condition = true;
-        }
+        };
 
         if (driver_type_code) {
             data.driver_type_code = driver_type_code;
@@ -382,17 +366,11 @@ exports.updateQualifiedLead = async (req, res, next) => {
         const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
 
         try {
-            if (prospectData.driver_type_code !== driver_type_code) {
-                if (prospectData.accepted_terms_condition) {
-                    data['accepted_terms_condition'] = true;
-                }
-                await addFirestoreRecord(newDocPath, data);
-                await deleteFirestoreRecord(oldDocPath);
-                res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
-            } else {
-                await updateFirestoreRecord(oldDocPath, data);
-                res.status(200).json({ message: "Lead updated successfully without changing driver_type_code" });
-            }
+            await addFirestoreRecord(newDocPath, data);
+
+            await deleteFirestoreRecord(oldDocPath);
+
+            res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
         } catch (error) {
             console.error("Error during document update:", error);
             res.status(500).json({ error: "An error occurred while updating the document." });
