@@ -290,6 +290,8 @@ exports.updateQualifiedLead = async (req, res, next) => {
         accepted_terms_condition
     } = req.body;
 
+    console.log('req.body', req.body.accepted_terms_condition);
+
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = vehicles ? vehicles.split(',') : [];
     let vehicleSubcategoryCode = vehicle_subcategory ? vehicle_subcategory.split(',') : [];
@@ -304,10 +306,10 @@ exports.updateQualifiedLead = async (req, res, next) => {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const oldDocPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
-        console.log('prospectData', prospectData);
-
         if (!driver_type_code) {
             driver_type_code = prospectData['driver_type_code'];
+        } else {
+            driver_type_code = driver_type_code
         }
 
         const removeUndefined = (obj) => {
@@ -341,6 +343,10 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
             accepted_terms_condition: accepted_terms_condition
         });
+
+        if(accepted_terms_condition) {
+            data.accepted_terms_condition = true;
+        }
 
         if (driver_type_code) {
             data.driver_type_code = driver_type_code;
@@ -377,7 +383,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
         try {
             if (prospectData.driver_type_code !== driver_type_code) {
-                if (prospectData.accepted_terms_condition === true) {
+                if (prospectData.accepted_terms_condition) {
                     data['accepted_terms_condition'] = true;
                 }
                 await addFirestoreRecord(newDocPath, data);
