@@ -265,7 +265,7 @@ exports.addQualifiedLead = async (req, res, next) => {
 };
 
 exports.updateQualifiedLead = async (req, res, next) => {
-    const {
+    let {
         full_name,
         vehicles,
         vehicle_configuration,
@@ -304,7 +304,17 @@ exports.updateQualifiedLead = async (req, res, next) => {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const oldDocPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
-        let data = {
+        console.log('prospectData', prospectData);
+
+        if (!driver_type_code) {
+            driver_type_code = prospectData['driver_type_code'];
+        }
+
+        const removeUndefined = (obj) => {
+            return Object.fromEntries(Object.entries(obj).filter(([_, v]) => v !== undefined));
+        };
+
+        let data = removeUndefined({
             ...prospectData,
             full_name: full_name || prospectData.full_name,
             vehicle_type_codes: vehicleCodes.length > 0 ? vehicleCodes : prospectData.vehicle_type_codes || null,
@@ -315,7 +325,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             session_time: null,
             session_timestamp: null,
             update_datetime: new Date(),
-            application_status: prospectData.application_status || "in_progress",
+            application_status: prospectData.application_status,
             lead_status: "vehicle_info_check",
             interview_status_code: "scheduled",
             status: status || prospectData.status,
@@ -330,7 +340,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_zone: pr_zone || prospectData.pr_zone || null,
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
             accepted_terms_condition: accepted_terms_condition
-        };
+        });
 
         if (driver_type_code) {
             data.driver_type_code = driver_type_code;
@@ -367,20 +377,15 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
         try {
             if (prospectData.driver_type_code !== driver_type_code) {
-            await addFirestoreRecord(newDocPath, data);
-            await addFirestoreRecord(newDocPath, data);
-
+                if (prospectData.accepted_terms_condition === true) {
+                    data['accepted_terms_condition'] = true;
+                }
                 await addFirestoreRecord(newDocPath, data);
-
-            await deleteFirestoreRecord(oldDocPath);
-            await deleteFirestoreRecord(oldDocPath);
-
                 await deleteFirestoreRecord(oldDocPath);
-
                 res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
             } else {
                 await updateFirestoreRecord(oldDocPath, data);
-                res.status(200).json({ message: "Lead updated successfully." });
+                res.status(200).json({ message: "Lead updated successfully without changing driver_type_code" });
             }
         } catch (error) {
             console.error("Error during document update:", error);
