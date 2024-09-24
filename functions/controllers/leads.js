@@ -252,8 +252,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                 }
                 if (updateRecord && updateRecord.status === 200) {
                     res.status(200).json({
-                        message:
-                            "Lead already present with update from rejected to prospect status in firestore",
+                        message: "Lead already present with update from rejected to prospect status in firestore",
                         status: prospectData.status,
                         is_avalabile: false
                     });
@@ -287,7 +286,8 @@ exports.updateQualifiedLead = async (req, res, next) => {
         pr_zone,
         pr_market,
         pr_zone_code,
-        pr_operation_centres
+        pr_operation_centres,
+        accepted_terms_condition
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -329,6 +329,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_market: pr_market || prospectData.pr_market || null,
             pr_zone: pr_zone || prospectData.pr_zone || null,
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
+            accepted_terms_condition: accepted_terms_condition
         };
 
         if (driver_type_code) {
@@ -365,11 +366,22 @@ exports.updateQualifiedLead = async (req, res, next) => {
         const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
 
         try {
+            if (prospectData.driver_type_code !== driver_type_code) {
+            await addFirestoreRecord(newDocPath, data);
             await addFirestoreRecord(newDocPath, data);
 
+                await addFirestoreRecord(newDocPath, data);
+
+            await deleteFirestoreRecord(oldDocPath);
             await deleteFirestoreRecord(oldDocPath);
 
-            res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
+                await deleteFirestoreRecord(oldDocPath);
+
+                res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
+            } else {
+                await updateFirestoreRecord(oldDocPath, data);
+                res.status(200).json({ message: "Lead updated successfully." });
+            }
         } catch (error) {
             console.error("Error during document update:", error);
             res.status(500).json({ error: "An error occurred while updating the document." });
