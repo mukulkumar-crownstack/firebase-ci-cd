@@ -60,7 +60,8 @@ exports.addQualifiedLead = async (req, res, next) => {
         pr_market,
         pr_zone_code,
         pr_operation_centres,
-        assigned_datetime
+        assigned_datetime,
+        accepted_terms_condition
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -108,6 +109,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                 pr_market,
                 pr_zone_code,
                 pr_operation_centres,
+                accepted_terms_condition
             };
     
             if (truora_flow_id) {
@@ -287,7 +289,8 @@ exports.updateQualifiedLead = async (req, res, next) => {
         pr_zone,
         pr_market,
         pr_zone_code,
-        pr_operation_centres
+        pr_operation_centres,
+        accepted_terms_condition
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -331,9 +334,10 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
         };
 
-        if (driver_type_code) {
-            data.driver_type_code = driver_type_code;
-            data.application_type = driver_type_code;
+        console.log(prospectData);
+
+        if(prospectData.truora_flow_id) {
+            data['accepted_terms_condition'] = accepted_terms_condition ? accepted_terms_condition : true
         }
 
         if (calculate_vehicle_type) {
@@ -362,18 +366,32 @@ exports.updateQualifiedLead = async (req, res, next) => {
             data["session_timestamp"] = moment.utc(t).format();
         }
 
-        const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
+        if (driver_type_code && driver_type_code !== prospectData.driver_type_code) {
+            data.driver_type_code = driver_type_code;
+            data.application_type = driver_type_code;
 
-        try {
-            await addFirestoreRecord(newDocPath, data);
+            const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
 
-            await deleteFirestoreRecord(oldDocPath);
+            try {
+                await addFirestoreRecord(newDocPath, data);
 
-            res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
-        } catch (error) {
-            console.error("Error during document update:", error);
-            res.status(500).json({ error: "An error occurred while updating the document." });
+                await deleteFirestoreRecord(oldDocPath);
+
+                res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
+            } catch (error) {
+                console.error("Error during document update:", error);
+                res.status(500).json({ error: "An error occurred while updating the document." });
+            }
+        } else {
+            try {
+                await updateFirestoreRecord(oldDocPath, data); 
+                res.status(200).json({ message: "Lead updated successfully without changing driver_type_code" });
+            } catch (error) {
+                console.error("Error during document update:", error);
+                res.status(500).json({ error: "An error occurred while updating the document." });
+            }
         }
+
     } else {
         res.status(404).json({ message: "Lead not found in qualified leads collection." });
     }
@@ -381,6 +399,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
 exports.updateQualifiedLeadStatus = async (req, res, next) => {
     const { status, phone, is_fleet, created_by = 'user' } = req.body;
+    console.log('status', status);
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
 
     const data = {
@@ -411,6 +430,7 @@ exports.updateQualifiedLeadStatus = async (req, res, next) => {
         const docPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
         if (status === "rejected") {
+            console.log('-------------------------------------------------------------------------------- status === "rejected"');
             const deleteRecord = await deleteFirestoreRecord(docPath);
             if (deleteRecord && deleteRecord.status === 200) {
                 res.status(200).json({ message: "Lead rejected and deleted successfully." });
