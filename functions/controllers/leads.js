@@ -252,7 +252,8 @@ exports.addQualifiedLead = async (req, res, next) => {
                 }
                 if (updateRecord && updateRecord.status === 200) {
                     res.status(200).json({
-                        message: "Lead already present with update from rejected to prospect status in firestore",
+                        message:
+                            "Lead already present with update from rejected to prospect status in firestore",
                         status: prospectData.status,
                         is_avalabile: false
                     });
@@ -292,7 +293,6 @@ exports.updateQualifiedLead = async (req, res, next) => {
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
     let vehicleCodes = vehicles ? vehicles.split(',') : [];
     let vehicleSubcategoryCode = vehicle_subcategory ? vehicle_subcategory.split(',') : [];
-    let accepted_terms_condition = true
 
     const snapshot = await getFirestoreRecord(qulifiedleadCollectionPath, {
         key: "phone",
@@ -329,7 +329,6 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_market: pr_market || prospectData.pr_market || null,
             pr_zone: pr_zone || prospectData.pr_zone || null,
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
-            accepted_terms_condition: accepted_terms_condition
         };
 
         if (driver_type_code) {
