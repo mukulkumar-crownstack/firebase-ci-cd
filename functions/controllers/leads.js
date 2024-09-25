@@ -330,7 +330,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_market: pr_market || prospectData.pr_market || null,
             pr_zone: pr_zone || prospectData.pr_zone || null,
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
-            accepted_terms_condition: accepted_terms_condition ? accepted_terms_condition : true,
+            accepted_terms_condition: true,
         };
 
         if (calculate_vehicle_type) {
@@ -372,7 +372,6 @@ exports.updateQualifiedLead = async (req, res, next) => {
 
                 res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
             } catch (error) {
-                console.error("Error during document update:", error);
                 res.status(500).json({ error: "An error occurred while updating the document." });
             }
         } else {
@@ -380,7 +379,6 @@ exports.updateQualifiedLead = async (req, res, next) => {
                 await updateFirestoreRecord(oldDocPath, data);
                 res.status(200).json({ message: "Lead updated successfully without changing driver_type_code" });
             } catch (error) {
-                console.error("Error during document update:", error);
                 res.status(500).json({ error: "An error occurred while updating the document." });
             }
         }
