@@ -60,8 +60,7 @@ exports.addQualifiedLead = async (req, res, next) => {
         pr_market,
         pr_zone_code,
         pr_operation_centres,
-        assigned_datetime,
-        accepted_terms_condition
+        assigned_datetime
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -109,7 +108,6 @@ exports.addQualifiedLead = async (req, res, next) => {
                 pr_market,
                 pr_zone_code,
                 pr_operation_centres,
-                accepted_terms_condition
             };
     
             if (truora_flow_id) {
@@ -290,7 +288,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
         pr_market,
         pr_zone_code,
         pr_operation_centres,
-        // accepted_terms_condition
+        accepted_terms_condition
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -318,7 +316,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             session_time: null,
             session_timestamp: null,
             update_datetime: new Date(),
-            application_status: prospectData.application_status || "in_progress",
+            application_status: "in_progress",
             lead_status: "vehicle_info_check",
             interview_status_code: "scheduled",
             status: status || prospectData.status,
@@ -332,13 +330,8 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_market: pr_market || prospectData.pr_market || null,
             pr_zone: pr_zone || prospectData.pr_zone || null,
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
+            accepted_terms_condition: accepted_terms_condition ? accepted_terms_condition : true,
         };
-
-        // console.log(prospectData);
-
-        // if(prospectData.truora_flow_id && prospectData.truora_flow_name) {
-        //     data['accepted_terms_condition'] = true;
-        // }
 
         if (calculate_vehicle_type) {
             const vehicleTypesCodes = await getFirestoreDocument(vehicleTypesMetadata);
@@ -366,9 +359,6 @@ exports.updateQualifiedLead = async (req, res, next) => {
             data["session_timestamp"] = moment.utc(t).format();
         }
 
-        // console.log('driver_type_code', driver_type_code);
-        // console.log('prospectData.driver_type_code', prospectData.driver_type_code);
-
         if (driver_type_code && driver_type_code !== prospectData.driver_type_code) {
             data.driver_type_code = driver_type_code;
             data.application_type = driver_type_code;
@@ -387,7 +377,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             }
         } else {
             try {
-                await updateFirestoreRecord(oldDocPath, data); 
+                await updateFirestoreRecord(oldDocPath, data);
                 res.status(200).json({ message: "Lead updated successfully without changing driver_type_code" });
             } catch (error) {
                 console.error("Error during document update:", error);
@@ -401,8 +391,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
 };
 
 exports.updateQualifiedLeadStatus = async (req, res, next) => {
-    const { status, phone, is_fleet, accepted_terms_condition, created_by = 'user' } = req.body;
-    console.log('status', status);
+    const { status, phone, is_fleet, created_by = 'user' } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
 
     const data = {
@@ -411,10 +400,6 @@ exports.updateQualifiedLeadStatus = async (req, res, next) => {
         update_datetime: new Date(),
         last_status_update: new Date(),
     };
-
-    if (accepted_terms_condition?.toString() === "true") {
-        data.accepted_terms_condition = true;
-    }
 
     if (is_fleet?.toString() === "true") {
         data.driver_type_code = "flotilleros";
@@ -432,14 +417,11 @@ exports.updateQualifiedLeadStatus = async (req, res, next) => {
         value: phoneNumber,
     });
 
-    console.log('snapshot.size', snapshot.size);
-
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
         const docPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
         if (status === "rejected") {
-            console.log('-------------------------------------------------------------------------------- status === "rejected"');
             const deleteRecord = await deleteFirestoreRecord(docPath);
             if (deleteRecord && deleteRecord.status === 200) {
                 res.status(200).json({ message: "Lead rejected and deleted successfully." });
@@ -447,7 +429,6 @@ exports.updateQualifiedLeadStatus = async (req, res, next) => {
                 res.status(500).json(deleteRecord.error);
             }
         } else {
-            console.log('else_______');
             const updateRecord = await updateFirestoreRecord(docPath, data);
             if (updateRecord && updateRecord.status === 200) {
                 res.status(200).json({ message: "Updated the Lead status successfully." });
