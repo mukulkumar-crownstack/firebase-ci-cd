@@ -1,5 +1,6 @@
 
 const admin = require("firebase-admin");
+const functions = require('firebase-functions');
 const { Timestamp } = require("firebase-admin/firestore");
 
 // const { algoliaProspectIndex } = require("../models/algolia.model");
@@ -18,62 +19,127 @@ exports.postMigrationsFirestoreData = async (req, res, next) => {
     });
 }
 
+// exports.postMigrationsData = async (req, res, next) => {
+//     console.log("start >>>>>>>>>>>>>>>>>>>>>>>>>>>");
+
+//     const prospectsCollectionRef = admin.firestore().collection('driver_lead/leads/prospects');
+//     const driverLeadCollectionRef = admin.firestore().collection('driver_lead');
+
+//     const documentSnapshotArray = await prospectsCollectionRef
+//         .where('status', '==', 'pre_lead')
+//         .get();
+    
+//     const existingLeadsSnapshot = await driverLeadCollectionRef.get();
+//     const existingLeadsSet = new Set(existingLeadsSnapshot.docs.map(doc => doc.data().phone));
+
+//     let batch = admin.firestore().batch();
+//     let operationCounter = 0;
+//     let counter = 0;
+
+//     for (const documentSnapshot of documentSnapshotArray.docs) {
+//         let documentData = documentSnapshot.data();
+
+//         counter++;
+
+//         if (!existingLeadsSet.has(documentData?.phone)) {
+//             documentData['status'] = 'rejected';
+//             documentData['application_status'] = 'without_unit';
+//             documentData['update_datetime'] = documentData?.update_datetime || new Date();
+//             documentData['pr_user_id'] = documentData?.pr_user_id || 'unknown';
+
+//             if (!documentData?.driver_type_code) {
+//                 documentData['driver_type_code'] = 'cliente_independiente';
+//                 documentData['application_type'] = 'cliente_independiente';
+//             }
+            
+//             if (!documentData?.application_type) {
+//                 documentData['application_type'] = documentData?.driver_type_code;
+//             }
+
+//             if (documentData?.assigned_datetime && typeof documentData.assigned_datetime === 'number') {
+//                 documentData.assigned_datetime = new Date(documentData.assigned_datetime);
+//             }
+
+//             if (documentData.driver_type_code === 'cliente_independiente') {
+//                 documentData['lead_status'] = "vehicle_info_check";
+//                 documentData['driver_user_uuid'] = documentData.prospect_uuid;
+//             } else {
+//                 documentData.lead_status = "company_background_check";
+//                 documentData['dispatch_driver_uuid'] = documentData.prospect_uuid;
+//             }
+
+//             if (documentData?.driver_type_code === 'cliente_independiente' || documentData?.driver_type_code === 'independent_driver') {
+//                 documentData['how_many_drivers'] = 1;
+//             }
+
+//             const newDocId = `${documentData.driver_type_code}_${documentData.phone_country_code}_${documentData.phone}`;
+//             const newDocRef = driverLeadCollectionRef.doc(newDocId);
+
+//             batch.set(newDocRef, documentData);
+//             operationCounter++;
+
+//             const prospectDocRef = prospectsCollectionRef.doc(documentSnapshot.id);
+//             batch.update(prospectDocRef, {
+//                 is_migration_done: true,
+//                 migration_datetime: new Date()
+//             });
+
+//             if (operationCounter === 499) {
+//                 console.log(`operationCounter __________________________________________________ ${operationCounter}`);
+//                 await batch.commit();
+                
+//                 batch = admin.firestore().batch();
+//                 operationCounter = 0;
+//             }
+//         }
+//     }
+
+//     if (operationCounter > 0) {
+//         await batch.commit();
+//         console.log("Final batch committed.", operationCounter);
+//     }
+
+//     console.log("End >>>>>>>>>>>>>>>>>>>>>>>>>>>");
+//     res.status(200).json({ message: "Done migrating data" });
+// };
+
 exports.postMigrationsData = async (req, res, next) => {
-    console.log("start");
+    console.log("start >>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
-    const prospectsCollectionRef = admin.firestore().collection('driver_lead/leads/prospects');
     const driverLeadCollectionRef = admin.firestore().collection('driver_lead');
-    
-    const documentSnapshotArray = await prospectsCollectionRef.where('status', '==', 'rejected').get();
-    
-    const batchArray = [];
-    batchArray.push(admin.firestore().batch());
-    let operationCounter = 0;
-    let batchIndex = 0;
-    let counter = 0;
+    const phoneMap = new Map();
+    const duplicates = [];
 
-    for (const documentSnapshot of documentSnapshotArray.docs) {
-        let documentData = documentSnapshot.data();
-        counter++;
+    try {
+        const snapshot = await driverLeadCollectionRef.get();
+        
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            const phone = data.phone;
 
-        const existingLeadQuerySnapshot = await driverLeadCollectionRef
-            .where('phone', '==', documentData?.phone)
-            .get();
-
-        if (existingLeadQuerySnapshot.empty) {
-            documentData['status'] = 'rejected';
-            documentData['application_status'] = 'without_unit';
-            documentData['update_datetime'] = new Date();
-            documentData['pr_user_id'] = 'unknown';
-            if(!documentData?.driver_type_code) {
-                documentData['driver_type_code'] = 'cliente_independiente';
+            if (phone) {
+                if (phoneMap.has(phone)) {
+                    phoneMap.set(phone, phoneMap.get(phone) + 1);
+                } else {
+                    phoneMap.set(phone, 1);
+                }
             }
-            if(!documentData?.application_type) {
-                documentData['application_type'] = documentData?.driver_type_code;
+        });
+
+        phoneMap.forEach((count, phone) => {
+            if (count > 1) {
+                duplicates.push({ phone, total_count: count, how_many_duplicates: count === 2 ? '1 duplicate' : `${count - 1} duplicates` });
             }
+        });
 
-            const newDocId = `${documentData.driver_type_code}_${documentData.phone_country_code}_${documentData.phone}`;
-            const newDocRef = driverLeadCollectionRef.doc(newDocId);
-            batchArray[batchIndex].set(newDocRef, documentData);
-            operationCounter++;
+        const total_cuplicate_count = duplicates.reduce((sum, { total_count }) => sum + total_count, 0);
 
-            console.log('Migrating document:', documentData?.phone);
-
-            if (operationCounter === 499) {
-                batchArray.push(admin.firestore().batch());
-                batchIndex++;
-                operationCounter = 0;
-                console.log("operations.....", counter);
-            }
-        }
+        console.log("End >>>>>>>>>>>>>>>>>>>>>>>>>>>");
+        res.status(200).json({ message: "Done migrating data", duplicates, total_cuplicate_count });
+    } catch (error) {
+        console.error("Error fetching data:", error);
+        res.status(500).json({ error: "Failed to migrate data" });
     }
-
-    // for (const batch of batchArray) {
-    //     await batch.commit();
-    //     console.log("Batch committed.");
-    // }
-
-    res.status(200).json({ message: "Done migrating data" });
 };
 
 exports.sendCollectionToAlgolia = async (req, res) => {

@@ -287,7 +287,8 @@ exports.updateQualifiedLead = async (req, res, next) => {
         pr_zone,
         pr_market,
         pr_zone_code,
-        pr_operation_centres
+        pr_operation_centres,
+        accepted_terms_condition
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -315,7 +316,7 @@ exports.updateQualifiedLead = async (req, res, next) => {
             session_time: null,
             session_timestamp: null,
             update_datetime: new Date(),
-            application_status: prospectData.application_status || "in_progress",
+            application_status: "in_progress",
             lead_status: "vehicle_info_check",
             interview_status_code: "scheduled",
             status: status || prospectData.status,
@@ -329,12 +330,8 @@ exports.updateQualifiedLead = async (req, res, next) => {
             pr_market: pr_market || prospectData.pr_market || null,
             pr_zone: pr_zone || prospectData.pr_zone || null,
             pr_operation_centres: pr_operation_centres || prospectData.pr_operation_centres || null,
+            accepted_terms_condition: true,
         };
-
-        if (driver_type_code) {
-            data.driver_type_code = driver_type_code;
-            data.application_type = driver_type_code;
-        }
 
         if (calculate_vehicle_type) {
             const vehicleTypesCodes = await getFirestoreDocument(vehicleTypesMetadata);
@@ -362,18 +359,30 @@ exports.updateQualifiedLead = async (req, res, next) => {
             data["session_timestamp"] = moment.utc(t).format();
         }
 
-        const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
+        if (driver_type_code && driver_type_code !== prospectData.driver_type_code) {
+            data.driver_type_code = driver_type_code;
+            data.application_type = driver_type_code;
 
-        try {
-            await addFirestoreRecord(newDocPath, data);
+            const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
 
-            await deleteFirestoreRecord(oldDocPath);
+            try {
+                await addFirestoreRecord(newDocPath, data);
 
-            res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
-        } catch (error) {
-            console.error("Error during document update:", error);
-            res.status(500).json({ error: "An error occurred while updating the document." });
+                await deleteFirestoreRecord(oldDocPath);
+
+                res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
+            } catch (error) {
+                res.status(500).json({ error: "An error occurred while updating the document." });
+            }
+        } else {
+            try {
+                await updateFirestoreRecord(oldDocPath, data);
+                res.status(200).json({ message: "Lead updated successfully without changing driver_type_code" });
+            } catch (error) {
+                res.status(500).json({ error: "An error occurred while updating the document." });
+            }
         }
+
     } else {
         res.status(404).json({ message: "Lead not found in qualified leads collection." });
     }
