@@ -26,7 +26,7 @@ exports.postMigrationsFirestoreData = async (req, res, next) => {
 //     const driverLeadCollectionRef = admin.firestore().collection('driver_lead');
 
 //     const documentSnapshotArray = await prospectsCollectionRef
-//         .where('status', '==', 'pre_lead')
+//         .where('status', '==', 'rejected')
 //         .get();
     
 //     const existingLeadsSnapshot = await driverLeadCollectionRef.get();
