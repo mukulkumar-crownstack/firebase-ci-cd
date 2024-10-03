@@ -420,11 +420,19 @@ exports.updateQualifiedLeadStatus = async (req, res, next) => {
         const docPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
         if (status === "rejected") {
-            const deleteRecord = await deleteFirestoreRecord(docPath);
-            if (deleteRecord && deleteRecord.status === 200) {
-                res.status(200).json({ message: "Lead rejected and deleted successfully." });
+            // const deleteRecord = await deleteFirestoreRecord(docPath);
+            // if (deleteRecord && deleteRecord.status === 200) {
+            //     res.status(200).json({ message: "Lead rejected and deleted successfully." });
+            // } else {
+            //     res.status(500).json(deleteRecord.error);
+            // }
+            data["application_status"] = 'without_unit';
+            data["status"] = 'rejected';
+            const updateRecord = await updateFirestoreRecord(docPath, data);
+            if (updateRecord && updateRecord.status === 200) {
+                res.status(200).json({ message: "Updated the Lead status successfully." });
             } else {
-                res.status(500).json(deleteRecord.error);
+                res.status(500).json(updateRecord.error);
             }
         } else {
             const updateRecord = await updateFirestoreRecord(docPath, data);
