@@ -389,10 +389,10 @@ exports.updateQualifiedLead = async (req, res, next) => {
 };
 
 exports.updateQualifiedLeadStatus = async (req, res, next) => {
-    const { status, phone, is_fleet, created_by = 'user' } = req.body;
+    const { status, phone, is_fleet, created_by = 'user', driver_type_code } = req.body;
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
 
-    const data = {
+    let data = {
         status: status,
         phone: phoneNumber,
         update_datetime: new Date(),
@@ -417,29 +417,37 @@ exports.updateQualifiedLeadStatus = async (req, res, next) => {
 
     if (snapshot.size > 0) {
         const { prospectID, prospectData } = getLeadFromSnapshot(snapshot);
-        const docPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
+        const oldDocPath = qulifiedleadDocPath.replace(":lead_uuid", prospectID);
 
-        if (status === "rejected") {
-            // const deleteRecord = await deleteFirestoreRecord(docPath);
-            // if (deleteRecord && deleteRecord.status === 200) {
-            //     res.status(200).json({ message: "Lead rejected and deleted successfully." });
-            // } else {
-            //     res.status(500).json(deleteRecord.error);
-            // }
-            data["application_status"] = 'without_unit';
-            data["status"] = 'rejected';
-            const updateRecord = await updateFirestoreRecord(docPath, data);
-            if (updateRecord && updateRecord.status === 200) {
-                res.status(200).json({ message: "Updated the Lead status successfully." });
-            } else {
-                res.status(500).json(updateRecord.error);
+        data = {
+            ...prospectData,
+            ...data,
+            driver_type_code: data.driver_type_code,
+            application_type: data.driver_type_code,
+        };
+
+        if (data.driver_type_code !== prospectData?.driver_type_code) {
+            const newDocPath = qulifiedleadDocPath.replace(":lead_uuid", `${data.driver_type_code}_${prospectData.phone_country_code}_${phoneNumber}`);
+
+            try {
+                await addFirestoreRecord(newDocPath, data);
+                await deleteFirestoreRecord(oldDocPath);
+
+                res.status(200).json({ message: "Lead updated successfully with new driver_type_code" });
+            } catch (error) {
+                res.status(500).json({ error: "An error occurred while updating the document." });
             }
         } else {
-            const updateRecord = await updateFirestoreRecord(docPath, data);
-            if (updateRecord && updateRecord.status === 200) {
+            if (status === "rejected") {
+                data["application_status"] = 'without_unit';
+                data["status"] = 'rejected';
+            }
+
+            try {
+                await updateFirestoreRecord(oldDocPath, data);
                 res.status(200).json({ message: "Updated the Lead status successfully." });
-            } else {
-                res.status(500).json(updateRecord.error);
+            } catch (error) {
+                res.status(500).json({ error: "An error occurred while updating the document." });
             }
         }
     } else {
