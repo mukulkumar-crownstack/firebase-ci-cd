@@ -107,35 +107,50 @@ exports.postMigrationsData = async (req, res, next) => {
     console.log("start >>>>>>>>>>>>>>>>>>>>>>>>>>>");
 
     const driverLeadCollectionRef = admin.firestore().collection('driver_lead');
-    const phoneMap = new Map();
-    const duplicates = [];
 
     try {
         const snapshot = await driverLeadCollectionRef.get();
-        
-        snapshot.forEach(doc => {
-            const data = doc.data();
-            const phone = data.phone;
+        let batch = admin.firestore().batch();
+        let operationCounter = 0;
 
-            if (phone) {
-                if (phoneMap.has(phone)) {
-                    phoneMap.set(phone, phoneMap.get(phone) + 1);
-                } else {
-                    phoneMap.set(phone, 1);
+        if (snapshot.empty) {
+            console.log("No documents found in the driver_lead collection.");
+        } else {
+            snapshot.forEach(doc => {
+                const data = doc.data();
+
+                if (!data.hasOwnProperty('contact_counter')) {
+                    const docRef = driverLeadCollectionRef.doc(doc.id);
+
+                    batch.update(docRef, { contact_counter: 0 });
+                    operationCounter++;
+
+                    if (operationCounter === 499) {
+                        console.log(`Committing batch with 499 updates...`);
+                        batch.commit().then(() => {
+                            console.log("Batch committed successfully.");
+                        }).catch(err => {
+                            console.error("Error committing batch:", err);
+                        });
+
+                        batch = admin.firestore().batch(); 
+                        operationCounter = 0;
+                    }
                 }
-            }
-        });
+            });
 
-        phoneMap.forEach((count, phone) => {
-            if (count > 1) {
-                duplicates.push({ phone, total_count: count, how_many_duplicates: count === 2 ? '1 duplicate' : `${count - 1} duplicates` });
+            if (operationCounter > 0) {
+                console.log(`Committing final batch with ${operationCounter} updates...`);
+                await batch.commit();
             }
-        });
 
-        const total_cuplicate_count = duplicates.reduce((sum, { total_count }) => sum + total_count, 0);
+            console.log("All updates committed successfully.");
+        }
 
         console.log("End >>>>>>>>>>>>>>>>>>>>>>>>>>>");
-        res.status(200).json({ message: "Done migrating data", duplicates, total_cuplicate_count });
+        res.status(200).json({
+            message: "Done migrating data",
+        });
     } catch (error) {
         console.error("Error fetching data:", error);
         res.status(500).json({ error: "Failed to migrate data" });

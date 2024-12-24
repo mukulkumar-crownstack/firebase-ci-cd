@@ -60,7 +60,8 @@ exports.addQualifiedLead = async (req, res, next) => {
         pr_market,
         pr_zone_code,
         pr_operation_centres,
-        assigned_datetime
+        assigned_datetime,
+        contact_counter
     } = req.body;
 
     let phoneNumber = helper_functions.getPhoneFromPhoneNumber(phone);
@@ -108,6 +109,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                 pr_market,
                 pr_zone_code,
                 pr_operation_centres,
+                contact_counter: contact_counter || 0
             };
     
             if (truora_flow_id) {

@@ -19,7 +19,8 @@ exports.postQualifiedDriver = async (req, res, next) => {
         pr_user_id,
         dispatch_company_uuid,
         company_name,
-        updated_by
+        updated_by,
+        contact_counter
     } = req.body;
     const qualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(phone, 'mx');
     if (qualifiedLeadSnapshot.size === 0) {
@@ -40,7 +41,8 @@ exports.postQualifiedDriver = async (req, res, next) => {
             application_type: 'driver',
             how_many_drivers: 1,
             pr_user_id: pr_user_id,
-            assigned_datetime: currentDateTime
+            assigned_datetime: currentDateTime,
+            contact_counter: contact_counter || 0
         };
         // prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
         const dispatchDriverDOCID = `driver_${prospectData.phone_country_code}_${dispatchDriverUUID}_${dispatch_company_uuid}`;
@@ -150,7 +152,8 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         vehicle_type,
         vehicle_type_id,
         updated_by,
-        license_plate
+        license_plate,
+        contact_counter
     } = req.body;
     const vehicleUUID = generateUUID();
     const currentDateTime = new Date();
@@ -175,7 +178,8 @@ exports.postQualifiedVehicle = async (req, res, next) => {
         driver_user_type_id: driver_type,
         pr_user_id: pr_user_id,
         assigned_datetime: currentDateTime,
-        license_plate: license_plate
+        license_plate: license_plate,
+        contact_counter: contact_counter || 0
     };
     // vehicleData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
     const dispatchDriverDOCID = `vehicle_${vehicleData.phone_country_code}_${vehicleUUID}_${dispatch_company_uuid ? dispatch_company_uuid : driver_uuid}`;
