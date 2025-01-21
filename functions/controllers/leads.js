@@ -171,9 +171,10 @@ exports.addQualifiedLead = async (req, res, next) => {
             const leadID = `${qualifiedLeadData.driver_type_code}_${qualifiedLeadData.phone_country_code}_${phoneNumber}`;
             const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
 
-            // Add lead to Firestore
+            // After successfully adding lead data:
             const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, qualifiedLeadData);
             if (addRecord && addRecord.status === 200) {
+                // Only add vehicle data if the required fields are provided
                 if (vehicle_subcategory && vehicle_subcategory_codes && vehicle_type_codes) {
                     const vehicleUUID = helper_functions.generateUUID();
                     const vehicleDocPath = `${qualifiedLeadDocPath}/vehicle_info/${vehicleUUID}`;
@@ -210,6 +211,15 @@ exports.addQualifiedLead = async (req, res, next) => {
                     } else {
                         res.status(500).json(addVehicleRecord.error);
                     }
+                } else {
+                    // If no vehicle info provided, just send the response without vehicle info
+                    res.status(200).json({
+                        message: "Lead added successfully.",
+                        status: qualifiedLeadData.status,
+                        qualifiedLeadData: qualifiedLeadData,
+                        is_available: true,
+                        prospect_uuid: qualifiedLeadData.prospect_uuid,
+                    });
                 }
             } else {
                 res.status(500).json(addRecord.error);
