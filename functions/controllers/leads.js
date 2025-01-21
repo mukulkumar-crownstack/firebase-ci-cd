@@ -109,9 +109,10 @@ exports.addQualifiedLead = async (req, res, next) => {
                 pr_market,
                 pr_zone_code,
                 pr_operation_centres,
-                contact_counter: contact_counter || 0
+                contact_counter: contact_counter || 0,
+                how_many_vehicles: 0
             };
-    
+
             if (truora_flow_id) {
                 qualifiedLeadData = {
                     ...qualifiedLeadData,
@@ -152,11 +153,11 @@ exports.addQualifiedLead = async (req, res, next) => {
                     pr_operation_centres,
                 };
             }
-    
+
             qualifiedLeadData['application_status'] = 'in_progress';
             qualifiedLeadData['interview_status_code'] = "scheduled";
             qualifiedLeadData['driver_uuid'] = qualifiedLeadData.prospect_uuid;
-    
+
             if (qualifiedLeadData.driver_type_code === 'cliente_independiente') {
                 qualifiedLeadData['lead_status'] = "vehicle_info_check";
                 qualifiedLeadData['driver_user_uuid'] = qualifiedLeadData.prospect_uuid;
@@ -164,21 +165,57 @@ exports.addQualifiedLead = async (req, res, next) => {
                 qualifiedLeadData.lead_status = "company_background_check";
                 qualifiedLeadData['dispatch_driver_uuid'] = qualifiedLeadData.prospect_uuid;
             }
-    
+
             qualifiedLeadData = removeUndefinedFields(qualifiedLeadData);
-    
+
             const leadID = `${qualifiedLeadData.driver_type_code}_${qualifiedLeadData.phone_country_code}_${phoneNumber}`;
             const qualifiedLeadDocPath = qulifiedleadDocPath.replace(':lead_uuid', leadID);
-    
+
+            // Add lead to Firestore
             const addRecord = await addFirestoreRecord(qualifiedLeadDocPath, qualifiedLeadData);
             if (addRecord && addRecord.status === 200) {
-                res.status(200).json({
-                    message: "Lead added successfully to qualified leads",
-                    status: qualifiedLeadData.status,
-                    qualifiedLeadData: qualifiedLeadData,
-                    is_available: true,
-                    prospect_uuid: qualifiedLeadData.prospect_uuid,
-                });
+                if (vehicle_subcategory && vehicle_subcategory_codes && vehicle_type_codes) {
+                    const vehicleUUID = helper_functions.generateUUID();
+                    const vehicleDocPath = `${qualifiedLeadDocPath}/vehicle_info/${vehicleUUID}`;
+                    const vehicleData = {
+                        code: vehicleUUID,
+                        license_plate: null,
+                        manufacturer: null,
+                        model: null,
+                        name: 'Vehicle 1 Info',
+                        vehicle_back_proof: null,
+                        vehicle_left_side_proof: null,
+                        vehicle_type: vehicle_subcategory_codes,
+                        year: vehicle_year || null,
+                        images: []
+                    };
+
+                    const addVehicleRecord = await addFirestoreRecord(vehicleDocPath, vehicleData);
+                    if (addVehicleRecord && addVehicleRecord.status === 200) {
+                        const updateLeadData = { how_many_vehicles: 1 };
+                        const updateLeadRecord = await updateFirestoreRecord(qualifiedLeadDocPath, updateLeadData);
+                        
+                        if (updateLeadRecord && updateLeadRecord.status === 200) {
+                            res.status(200).json({
+                                message: "Lead and vehicle info added successfully",
+                                status: qualifiedLeadData.status,
+                                qualifiedLeadData: qualifiedLeadData,
+                                vehicleData: vehicleData,
+                                is_available: true,
+                                prospect_uuid: qualifiedLeadData.prospect_uuid,
+                            });
+                        } else {
+                            res.status(500).json(updateLeadRecord.error);
+                        }
+                    } else {
+                        res.status(500).json(addVehicleRecord.error);
+                    }
+                } else {
+                    res.status(400).json({
+                        message: "Vehicle information not provided",
+                        is_available: false,
+                    });
+                }
             } else {
                 res.status(500).json(addRecord.error);
             }
