@@ -210,11 +210,6 @@ exports.addQualifiedLead = async (req, res, next) => {
                     } else {
                         res.status(500).json(addVehicleRecord.error);
                     }
-                } else {
-                    res.status(400).json({
-                        message: "Vehicle information not provided",
-                        is_available: false,
-                    });
                 }
             } else {
                 res.status(500).json(addRecord.error);
