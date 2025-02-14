@@ -57,7 +57,6 @@ exports.postQualifiedDriver = async (req, res, next) => {
             contact_counter: contact_counter || 0
         };
 
-        // Add optional vehicle fields only if they exist
         if (vehicle_subcategory_codes) prospectData.vehicle_subcategory_codes = vehicle_subcategory_codes;
         if (vehicle_type_codes) prospectData.vehicle_type_codes = vehicle_type_codes;
         if (license_plate) prospectData.license_plate = license_plate;
@@ -71,7 +70,6 @@ exports.postQualifiedDriver = async (req, res, next) => {
         }
 
         let vehicleData = null;
-        // Process vehicle info only if all necessary fields are present
         if (vehicle_subcategory_codes && vehicle_type_codes && license_plate) {
             const vehicleUUID = helper_functions.generateUUID();
             const vehicleDocPath = `${docPath}/vehicle_info/${vehicleUUID}`;
