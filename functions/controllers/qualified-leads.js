@@ -27,10 +27,11 @@ exports.postQualifiedDriver = async (req, res, next) => {
             license_plate
         } = req.body;
 
+        // Check if the lead already exists as a qualified driver
         const qualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(phone, 'mx');
         if (qualifiedLeadSnapshot.size > 0) {
             return res.status(200).json({
-                message: "phone number already present",
+                message: "Phone number already present",
                 status: qualifiedLeadSnapshot.docs[0].data().application_status,
                 is_available: false
             });
@@ -39,6 +40,8 @@ exports.postQualifiedDriver = async (req, res, next) => {
         const dispatchDriverUUID = generateUUID();
         const currentDateTime = new Date();
         currentDateTime.setSeconds(currentDateTime.getSeconds() + 3);
+
+        // Construct prospect data
         const prospectData = {
             full_name,
             company_name,
@@ -57,41 +60,77 @@ exports.postQualifiedDriver = async (req, res, next) => {
             contact_counter: contact_counter || 0
         };
 
+        // Assign optional vehicle properties if present
         if (vehicle_subcategory_codes) prospectData.vehicle_subcategory_codes = vehicle_subcategory_codes;
         if (vehicle_type_codes) prospectData.vehicle_type_codes = vehicle_type_codes;
         if (license_plate) prospectData.license_plate = license_plate;
 
+        // Generate document path
         const dispatchDriverDOCID = `driver_${prospectData.phone_country_code}_${dispatchDriverUUID}_${dispatch_company_uuid}`;
         const docPath = qulifiedleadDocPath.replace(":doc_uuid", dispatchDriverDOCID);
 
+        // Add prospect data to Firestore
         const addRecord = await addFirestoreRecord(docPath, prospectData);
         if (!addRecord || addRecord.status !== 200) {
             return res.status(500).json({ error: "Failed to add dispatch company driver" });
         }
 
         let vehicleData = null;
-        if (vehicle_subcategory_codes && vehicle_type_codes && license_plate) {
-            const vehicleUUID = helper_functions.generateUUID();
-            const vehicleDocPath = `${docPath}/vehicle_info/${vehicleUUID}`;
-            vehicleData = {
-                code: vehicleUUID,
-                license_plate: license_plate,
-                manufacturer: null,
-                model: null,
-                name: 'Vehicle 1 Info',
-                vehicle_back_proof: null,
-                vehicle_left_side_proof: null,
-                vehicle_type: vehicle_subcategory_codes,
-                year: null,
-                images: []
-            };
+        let vehicleCount = 0;
 
-            const addVehicleRecord = await addFirestoreRecord(vehicleDocPath, vehicleData);
-            if (!addVehicleRecord || addVehicleRecord.status !== 200) {
-                return res.status(500).json({ error: "Failed to add vehicle info" });
+        // Handle vehicle information if provided
+        if (vehicle_subcategory_codes && vehicle_type_codes && license_plate) {
+            vehicleCount = Array.isArray(vehicle_subcategory_codes) 
+                ? vehicle_subcategory_codes.length 
+                : 1;
+
+            const vehicles = Array.isArray(vehicle_subcategory_codes) 
+                ? vehicle_subcategory_codes.map((subcategory, index) => ({
+                    code: helper_functions.generateUUID(),
+                    license_plate: Array.isArray(license_plate) ? license_plate[index] : license_plate,
+                    manufacturer: null,
+                    model: null,
+                    name: `Vehicle ${index + 1} Info`,
+                    vehicle_back_proof: null,
+                    vehicle_left_side_proof: null,
+                    vehicle_type: subcategory,
+                    year: null,
+                    images: []
+                }))
+                : [{
+                    code: helper_functions.generateUUID(),
+                    license_plate,
+                    manufacturer: null,
+                    model: null,
+                    name: "Vehicle 1 Info",
+                    vehicle_back_proof: null,
+                    vehicle_left_side_proof: null,
+                    vehicle_type: vehicle_subcategory_codes,
+                    year: null,
+                    images: []
+                }];
+
+            // Save each vehicle in Firestore
+            for (const vehicle of vehicles) {
+                const vehicleDocPath = `${docPath}/vehicle_info/${vehicle.code}`;
+                const addVehicleRecord = await addFirestoreRecord(vehicleDocPath, vehicle);
+                if (!addVehicleRecord || addVehicleRecord.status !== 200) {
+                    return res.status(500).json({ error: "Failed to add vehicle info" });
+                }
             }
 
-            const updateLeadData = { how_many_vehicles: 1 };
+            vehicleData = vehicles;
+        }
+
+        // Update the lead record with vehicle count if vehicles exist
+        if (vehicleCount > 0) {
+            const updateLeadData = { how_many_vehicles: vehicleCount };
+            const updateLeadRecord = await updateFirestoreRecord(docPath, updateLeadData);
+            if (!updateLeadRecord || updateLeadRecord.status !== 200) {
+                return res.status(500).json({ error: "Failed to update lead with vehicle count" });
+            }
+        } else {
+            const updateLeadData = { how_many_vehicles: 0 };
             const updateLeadRecord = await updateFirestoreRecord(docPath, updateLeadData);
             if (!updateLeadRecord || updateLeadRecord.status !== 200) {
                 return res.status(500).json({ error: "Failed to update lead with vehicle count" });
