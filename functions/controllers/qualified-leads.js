@@ -179,7 +179,7 @@ exports.putQualifiedDriver = async (req, res, next) => {
                 res.status(200).json({
                     message: "phone number already present",
                     status: qualifiedLeadSnapshot.docs[0].data().application_status,
-                    is_avalabile: false
+                    is_available: false
                 });
             }
         } else {

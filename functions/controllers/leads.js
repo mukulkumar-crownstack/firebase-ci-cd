@@ -238,7 +238,7 @@ exports.addQualifiedLead = async (req, res, next) => {
             res.status(200).json({
                 message: "Lead already present",
                 status: prospectData.status,
-                is_avalabile: false
+                is_available: false
             });
         } else {
             const data = {
@@ -253,7 +253,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                 res.status(201).json({
                     message: "Lead already present with prospect status",
                     status: prospectData.status,
-                    is_avalabile: false
+                    is_available: false
                 });
             } else if (prospectData.status === "rejected") {
                 data.status = "prospect";
@@ -263,7 +263,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                         message:
                             "Lead already present with update from rejected to prospect status in firestore",
                         status: prospectData.status,
-                        is_avalabile: false
+                        is_available: false
                     });
                 } else {
                     res.status(500).json(updateRecord.error);
@@ -272,13 +272,13 @@ exports.addQualifiedLead = async (req, res, next) => {
                 res.status(201).json({
                     message: "Lead already present with qualified status",
                     status: prospectData.status,
-                    is_avalabile: false
+                    is_available: false
                 });
             } else if (prospectData.status === "lead") {
                 res.status(201).json({
                     message: "Lead already present with lead status",
                     status: 'qualified',
-                    is_avalabile: false
+                    is_available: false
                 });
             } else {
                 const updateRecord = await updateFirestoreRecord(docPath, data);
@@ -299,7 +299,7 @@ exports.addQualifiedLead = async (req, res, next) => {
                         message:
                             "Lead already present with update from rejected to prospect status in firestore",
                         status: prospectData.status,
-                        is_avalabile: false
+                        is_available: false
                     });
                 } else {
                     res.status(500).json(updateRecord.error);
