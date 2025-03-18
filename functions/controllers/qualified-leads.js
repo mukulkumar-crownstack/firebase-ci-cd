@@ -2,6 +2,7 @@ const admin = require("firebase-admin");
 const { getFirestoreRecord, addFirestoreRecord, updateFirestoreRecord } = require("../models/firestore.model");
 const { ApplicationStatus, Driver_Type_Code } = require("../utils/enums");
 const { generateUUID } = require("../utils/helper.functions");
+const helper_functions = require("../utils/helper.functions");
 const { interviewers } = require("../utils/constants");
 const qulifiedleadCollectionPath = "driver_lead";
 const qulifiedleadDocPath = `driver_lead/:doc_uuid`;
@@ -11,65 +12,147 @@ const getDataFromSnapshot = (snapshot) => ({
 });
 
 exports.postQualifiedDriver = async (req, res, next) => {
-    const {
-        phone,
-        phone_country_code,
-        full_name,
-        created_by,
-        pr_user_id,
-        dispatch_company_uuid,
-        company_name,
-        updated_by,
-        contact_counter
-    } = req.body;
-    const qualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(phone, 'mx');
-    if (qualifiedLeadSnapshot.size === 0) {
+    try {
+        const {
+            phone,
+            phone_country_code,
+            full_name,
+            created_by,
+            pr_user_id,
+            dispatch_company_uuid,
+            dispatch_company_id,
+            dispatch_company_branch_id,
+            company_name,
+            contact_counter,
+            vehicle_subcategory_codes,
+            vehicle_type_codes,
+            license_plate
+        } = req.body;
+
+        // Check if the lead already exists as a qualified driver
+        const qualifiedLeadSnapshot = await checkIfLeadAlreadyPresentAsQualified(phone, 'mx');
+        if (qualifiedLeadSnapshot.size > 0) {
+            return res.status(200).json({
+                message: "Phone number already present",
+                status: qualifiedLeadSnapshot.docs[0].data().application_status,
+                is_available: false
+            });
+        }
+
         const dispatchDriverUUID = generateUUID();
         const currentDateTime = new Date();
         currentDateTime.setSeconds(currentDateTime.getSeconds() + 3);
+
+        // Construct prospect data
         const prospectData = {
-            full_name: full_name,
-            company_name: company_name,
-            phone: phone,
-            phone_country_code: phone_country_code,
+            full_name,
+            company_name,
+            phone,
+            phone_country_code,
             application_status: ApplicationStatus.IN_PROGRESS,
             created_datetime: new Date(),
             update_datetime: new Date(),
-            created_by: created_by,
-            dispatch_company_uuid: dispatch_company_uuid,
+            created_by,
+            dispatch_company_uuid,
+            dispatch_company_id,
+            dispatch_company_branch_id,
             dispatch_driver_uuid: dispatchDriverUUID,
             application_type: 'driver',
             how_many_drivers: 1,
-            pr_user_id: pr_user_id,
+            pr_user_id,
             assigned_datetime: currentDateTime,
             contact_counter: contact_counter || 0
         };
-        // prospectData['interviewer_details'] = interviewers.find(i => i.pr_user_id === +pr_user_id);
+
+        // Assign optional vehicle properties if present
+        if (vehicle_subcategory_codes) prospectData.vehicle_subcategory_codes = vehicle_subcategory_codes;
+        if (vehicle_type_codes) prospectData.vehicle_type_codes = vehicle_type_codes;
+        if (license_plate) prospectData.license_plate = license_plate;
+
+        // Generate document path
         const dispatchDriverDOCID = `driver_${prospectData.phone_country_code}_${dispatchDriverUUID}_${dispatch_company_uuid}`;
-        const docPath = qulifiedleadDocPath.replace(
-            ":doc_uuid",
-            dispatchDriverDOCID
-        );
+        const docPath = qulifiedleadDocPath.replace(":doc_uuid", dispatchDriverDOCID);
+
+        // Add prospect data to Firestore
         const addRecord = await addFirestoreRecord(docPath, prospectData);
-        if (addRecord && addRecord.status === 200) {
-            // const logPath = `${docPath}/change_logs/${new Date().toISOString()}`;
-            // prospectData['updated_by'] = updated_by;
-            // addLog(logPath, prospectData);
-            res.status(200).json({
-                message: "added dispatch driver",
-                dispatch_driver_uuid: prospectData.dispatch_driver_uuid,
-                status: prospectData.status,
-                is_avalabile: true
-            });
-        } else {
-            res.status(500).json(addRecord.error);
+        if (!addRecord || addRecord.status !== 200) {
+            return res.status(500).json({ error: "Failed to add dispatch company driver" });
         }
-    } else {
-        res.status(200).json({
-            message: "phone number already present",
-            status: qualifiedLeadSnapshot.docs[0].data().application_status,
-            is_avalabile: false
+
+        let vehicleData = null;
+        let vehicleCount = 0;
+
+        // Handle vehicle information if provided
+        if (vehicle_subcategory_codes && vehicle_type_codes && license_plate) {
+            vehicleCount = Array.isArray(vehicle_subcategory_codes) 
+                ? vehicle_subcategory_codes.length 
+                : 1;
+
+            const vehicles = Array.isArray(vehicle_subcategory_codes) 
+                ? vehicle_subcategory_codes.map((subcategory, index) => ({
+                    code: helper_functions.generateUUID(),
+                    license_plate: Array.isArray(license_plate) ? license_plate[index] : license_plate,
+                    manufacturer: null,
+                    model: null,
+                    name: `Vehicle ${index + 1} Info`,
+                    vehicle_back_proof: null,
+                    vehicle_left_side_proof: null,
+                    vehicle_type: subcategory,
+                    year: null,
+                    images: []
+                }))
+                : [{
+                    code: helper_functions.generateUUID(),
+                    license_plate,
+                    manufacturer: null,
+                    model: null,
+                    name: "Vehicle 1 Info",
+                    vehicle_back_proof: null,
+                    vehicle_left_side_proof: null,
+                    vehicle_type: vehicle_subcategory_codes,
+                    year: null,
+                    images: []
+                }];
+
+            // Save each vehicle in Firestore
+            for (const vehicle of vehicles) {
+                const vehicleDocPath = `${docPath}/vehicle_info/${vehicle.code}`;
+                const addVehicleRecord = await addFirestoreRecord(vehicleDocPath, vehicle);
+                if (!addVehicleRecord || addVehicleRecord.status !== 200) {
+                    return res.status(500).json({ error: "Failed to add vehicle info" });
+                }
+            }
+
+            vehicleData = vehicles;
+        }
+
+        // Update the lead record with vehicle count if vehicles exist
+        if (vehicleCount > 0) {
+            const updateLeadData = { how_many_vehicles: vehicleCount };
+            const updateLeadRecord = await updateFirestoreRecord(docPath, updateLeadData);
+            if (!updateLeadRecord || updateLeadRecord.status !== 200) {
+                return res.status(500).json({ error: "Failed to update lead with vehicle count" });
+            }
+        } else {
+            const updateLeadData = { how_many_vehicles: 0 };
+            const updateLeadRecord = await updateFirestoreRecord(docPath, updateLeadData);
+            if (!updateLeadRecord || updateLeadRecord.status !== 200) {
+                return res.status(500).json({ error: "Failed to update lead with vehicle count" });
+            }
+        }
+
+        return res.status(200).json({
+            message: "Added dispatch company driver",
+            dispatch_driver_uuid: prospectData.dispatch_driver_uuid,
+            status: prospectData.application_status,
+            is_available: true,
+            qualifiedLeadData: prospectData,
+            vehicleData,
+            prospect_uuid: prospectData.dispatch_company_uuid,
         });
+    } catch (error) {
+        console.error("Error in postQualifiedDriver:", error);
+        return res.status(500).json({ error: "Internal server error" });
     }
 };
 
@@ -96,7 +179,7 @@ exports.putQualifiedDriver = async (req, res, next) => {
                 res.status(200).json({
                     message: "phone number already present",
                     status: qualifiedLeadSnapshot.docs[0].data().application_status,
-                    is_avalabile: false
+                    is_available: false
                 });
             }
         } else {
